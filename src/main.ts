@@ -2,14 +2,14 @@
 import {Command} from 'commander';
 import {projectVersion} from './version.js';
 import {parseTsvToRentalOffers} from './tsvRentalOffersParser.js';
+import chalk from 'chalk';
 const program = new Command();
 
-
 program
-  .description('Программа для подготовки данных для REST API сервера.')
+  .description(chalk.blue('Программа для подготовки данных для REST API сервера.'))
   .usage('--<command> [--arguments]')
   .version(projectVersion, '--version', 'выводит номер версии')
-  .helpOption('--help', 'печатает этот текст')
+  .helpOption('--help', chalk.red('печатает этот текст'))
   .helpCommand(false);
 
 program
