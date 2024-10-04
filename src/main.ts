@@ -20,7 +20,7 @@ async function generateData(n: number, url: string): Promise<RentalOffer[]> {
   const generatedData: RentalOffer[] = [];
 
   for (let i = 0; i < n; i++) {
-    const response = await axios.get<RentalOffer>(`${url}/${i%8}`);
+    const response = await axios.get<RentalOffer>(`${url}/${i % 8}`);
     const data = response.data;
     data.publishDate = new Date(data.publishDate);
     data.price = Math.floor(Math.random() * 1000);
