@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "commander": "^12.1.0",
+    "pino": "^9.4.0",
     "tslib": "^2.7.0"
   }
 }
