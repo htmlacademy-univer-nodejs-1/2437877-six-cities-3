@@ -38,6 +38,8 @@
   },
   "dependencies": {
     "commander": "^12.1.0",
+    "cross-env": "7.0.3",
+    "dotenv": "^16.4.5",
     "pino": "^9.4.0",
     "tslib": "^2.7.0"
   }
