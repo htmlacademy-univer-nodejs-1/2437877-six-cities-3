@@ -10,7 +10,8 @@
   "main": "main.js",
   "scripts": {
     "prebuild": "node -p \"'export const projectVersion = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "start": "npm run build && node ./dist/main.js",
+    "start tool": "npm run build && node ./dist/main.js",
+    "start server": "npm run build && node ./dist/Application.js | pino-pretty -c",
     "build": "npm run clean && npm run compile",
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",

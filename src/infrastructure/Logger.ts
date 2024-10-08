@@ -12,12 +12,6 @@ interface Logger {
 export const logger : Logger = pino.pino(
   {
     level: process.env.PINO_LOG_LEVEL || 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true
-      }
-    }
   }
 );
 
