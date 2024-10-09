@@ -44,7 +44,9 @@
     "convict-format-with-validator": "^6.2.0",
     "cross-env": "7.0.3",
     "dotenv": "^16.4.5",
+    "inversify": "^6.0.2",
     "pino": "^9.4.0",
+    "reflect-metadata": "^0.2.2",
     "tslib": "^2.7.0"
   }
 }
