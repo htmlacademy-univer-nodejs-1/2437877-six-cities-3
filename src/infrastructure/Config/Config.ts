@@ -1,7 +1,7 @@
 import convict from 'convict';
 import validator from 'convict-format-with-validator';
 import { IConfig } from './IConfig.js';
-import {injectable} from "inversify";
+import {injectable} from 'inversify';
 
 convict.addFormats(validator);
 
@@ -56,5 +56,5 @@ export class Config implements IConfig{
   get salt(): string {
     return this.innerConfig.get('salt');
 
-}
+  }
 }
