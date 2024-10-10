@@ -22,6 +22,7 @@
     "emitDecoratorMetadata": true,
     "types": [
       "node",
+      "reflect-metadata"
     ],
     "lib": [
       "ESNext"

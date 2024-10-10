@@ -10,7 +10,8 @@
   "main": "main.js",
   "scripts": {
     "prebuild": "node -p \"'export const projectVersion = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "start": "npm run build && node ./dist/main.js",
+    "start tool": "npm run build && node ./dist/main.js",
+    "start server": "npm run build && node ./dist/Application.js | pino-pretty -c",
     "build": "npm run clean && npm run compile",
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
@@ -36,7 +37,16 @@
     "npm": ">=8"
   },
   "dependencies": {
+    "@types/convict": "^6.1.6",
+    "@types/convict-format-with-validator": "^6.0.5",
     "commander": "^12.1.0",
+    "convict": "^6.2.4",
+    "convict-format-with-validator": "^6.2.0",
+    "cross-env": "7.0.3",
+    "dotenv": "^16.4.5",
+    "inversify": "^6.0.2",
+    "pino": "^9.4.0",
+    "reflect-metadata": "^0.2.2",
     "tslib": "^2.7.0"
   }
 }

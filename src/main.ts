@@ -4,8 +4,8 @@ import {projectVersion} from './version.js';
 import {parseTsvToRentalOffers} from './tsvRentalOffersParser.js';
 import chalk from 'chalk';
 import {RentalOffer} from './domain/rent/RentalOffer.js';
-import axios from 'axios';
 import * as fs from 'node:fs';
+import {generateUniqueRentalOffers} from './MockDataGenerator.js';
 const program = new Command();
 
 program
@@ -15,20 +15,6 @@ program
   .helpOption('--help', chalk.red('печатает этот текст'))
   .helpCommand(false);
 
-
-async function generateData(n: number, url: string): Promise<RentalOffer[]> {
-  const generatedData: RentalOffer[] = [];
-
-  for (let i = 0; i < n; i++) {
-    const response = await axios.get<RentalOffer>(`${url}/${i % 8}`);
-    const data = response.data;
-    data.publishDate = new Date(data.publishDate);
-    data.price = Math.floor(Math.random() * 1000);
-    generatedData.push(data);
-  }
-
-  return generatedData;
-}
 
 function saveDataToFile(data: RentalOffer[], filepath: string) {
   const tsvData = data.map((offer) => [
@@ -61,7 +47,7 @@ program
   .argument('<filepath>','')
   .argument('<url>','')
   .action(async (n:number, filepath:string, url:string)=>{
-    const data = await generateData(n, url);
+    const data = await generateUniqueRentalOffers(n, url);
     saveDataToFile(data, filepath);
   });
 
