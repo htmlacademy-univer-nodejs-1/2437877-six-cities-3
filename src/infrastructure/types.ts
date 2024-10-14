@@ -1,5 +1,6 @@
 export const TYPES = {
-  ILogger: Symbol.for('ILogger'),
+  Logger: Symbol.for('ILogger'),
   Application: Symbol.for('Application'),
   Config: Symbol.for('Config'),
+  DatabaseClient: Symbol.for('DatabaseClient'),
 };
