@@ -1,0 +1,21 @@
+import 'reflect-metadata';
+import {Container} from 'inversify';
+import {ILogger} from './Logger/ILogger.js';
+import {TYPES} from './types.js';
+import {PinoLogger} from './Logger/PinoLogger.js';
+import {Application} from '../Application.js';
+import {IConfig} from './Config/IConfig.js';
+import {Config} from './Config/Config.js';
+import {DatabaseClient} from './Database/database-client.interface.js';
+import {MongoDatabaseClient} from './Mongo/mongo-database-client.js';
+import {IRentalOfferService, IUserService} from '../DAL/databaseService.js';
+import {UserService} from '../DAL/userService.js';
+import {RentalOfferService} from '../DAL/rentalOfferService.js';
+
+export const container = new Container();
+container.bind<ILogger>(TYPES.Logger).to(PinoLogger).inSingletonScope();
+container.bind<Application>(TYPES.Application).to(Application).inSingletonScope();
+container.bind<IConfig>(TYPES.Config).to(Config).inSingletonScope();
+container.bind<DatabaseClient>(TYPES.DatabaseClient).to(MongoDatabaseClient).inSingletonScope();
+container.bind<IUserService>(TYPES.UserService).to(UserService).inSingletonScope();
+container.bind<IRentalOfferService>(TYPES.RentalOfferService).to(RentalOfferService).inSingletonScope();

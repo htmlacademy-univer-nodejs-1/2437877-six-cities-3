@@ -5,6 +5,7 @@ import {User} from './domain/user/User.js';
 import {HousingType} from './domain/rent/HousingType.js';
 import {Facilities} from './domain/rent/Facilities.js';
 import {UserType} from './domain/user/UserType.js';
+import {City} from './domain/rent/City.js';
 
 export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOffer[]> {
   const fileStream = fs.createReadStream(filepath);
@@ -18,8 +19,8 @@ export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOf
   for await (const line of rl) {
     const elements = line.split('\t');
 
-    if(elements.length !== 17){
-      continue;
+    if(elements.length !== 21){
+      console.error(`Invalid number of elements in line: ${line}`);
     }
 
     const [
@@ -38,23 +39,35 @@ export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOf
       price,
       facilities,
       authorId,
+      authorUserType,
+      authorAvatar,
+      authorEmail,
+      authorPassword,
       commentsCount,
       coordinates
     ] = line.split('\t');
 
-    const author = new User(authorId, 'main', 'psw', UserType.Pro);
+    if(authorUserType !== UserType.Pro && authorUserType !== UserType.Regular){
+      throw new Error('Invalid user type');
+    }
+
+    if(!Object.values(City).map((x)=>x.toString()).includes(city as City)){
+      throw new Error('Invalid city');
+    }
+
+    const author = new User(authorId, authorEmail, authorPassword, authorUserType, authorAvatar);
 
     const rentalOffer = new RentalOffer(
       title,
       description,
       new Date(publishDate),
-      city,
+      city as City,
       previewImage,
       photos.split(','),
       isPremium === 'true',
       isFavorite === 'true',
       Number(rating),
-      HousingType[housingType as keyof typeof HousingType],
+      housingType as HousingType,
       Number(rooms),
       Number(guests),
       Number(price),
