@@ -1,13 +1,13 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { IUser } from './userDbo.js';
 import {Facilities} from '../domain/rent/Facilities.js';
 import {HousingType} from '../domain/rent/HousingType.js';
+import {City} from '../domain/rent/City.js';
 
 export interface IRentalOffer extends Document {
   title: string;
   description: string;
   publishDate: Date;
-  city: string;
+  city: City;
   previewImage: string;
   photos: string[];
   isPremium: boolean;
@@ -18,7 +18,7 @@ export interface IRentalOffer extends Document {
   guests: number;
   price: number;
   facilities: Facilities[];
-  author: IUser['_id'];
+  author: mongoose.Types.ObjectId;
   commentsCount: number;
   coordinates: [number, number];
 }
@@ -43,7 +43,7 @@ const RentalOfferSchema: Schema = new Schema({
   city: {
     type: String,
     required: true,
-    enum: ['Paris', 'Cologne', 'Brussels', 'Amsterdam', 'Hamburg', 'Dusseldorf']
+    enum: Object.values(City)
   },
   previewImage: {
     type: String,
@@ -97,7 +97,7 @@ const RentalOfferSchema: Schema = new Schema({
   },
   author: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'UserDbo',
     required: true
   },
   commentsCount: {

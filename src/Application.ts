@@ -15,11 +15,11 @@ export class Application {
 
   }
 
-  public Init(){
+  public async Init(){
     this.logger.info('App started');
     this.logger.info(`Server started on ${this.config.port} ${this.config.dbip} ${this.config.salt}`);
     const url = getMongoURI(this.config.DB_USER, this.config.DB_PASSWORD,this.config.dbip, this.config.DB_PORT, this.config.DB_NAME);
-    this.db.connect(url);
+    await this.db.connect(url);
 
   }
 }

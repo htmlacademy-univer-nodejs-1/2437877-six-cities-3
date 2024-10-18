@@ -3,7 +3,7 @@
     "title": "Cozy Apartment in Downtown",
     "description": "A beautiful apartment in the heart of the city",
     "publishDate": "2022-01-15T12:00:00",
-    "city": "New York",
+    "city": "Paris",
     "previewImage": "apartment1.jpg",
     "photos": ["photo1.jpg", "photo2.jpg", "photo3.jpg"],
     "isPremium": true,
@@ -16,7 +16,9 @@
     "facilities": ["Breakfast", "Washer"],
     "author": {
       "name": "John Doe",
-      "email": "johndoe@example.com"
+      "email": "johndoe@example.com",
+      "password": "absaasda",
+      "userType": "regular"
     },
     "commentsCount": 10,
     "coordinates": [40.7128, -74.0060]
@@ -25,7 +27,7 @@
     "title": "Luxury Beach House",
     "description": "Beautiful beach house with stunning ocean views",
     "publishDate": "2022-02-20T10:00:00",
-    "city": "Miami",
+    "city": "Cologne",
     "previewImage": "beachhouse1.jpg",
     "photos": ["beachphoto1.jpg", "beachphoto2.jpg", "beachphoto3.jpg"],
     "isPremium": true,
@@ -38,7 +40,9 @@
     "facilities": ["Washer"],
     "author": {
       "name": "Alice Smith",
-      "email": "alice.smith@example.com"
+      "email": "alice.smith@example.com",
+      "password": "absaasda",
+      "userType": "regular"
     },
     "commentsCount": 15,
     "coordinates": [25.7617, -80.1918]
@@ -47,7 +51,7 @@
     "title": "Mountain Cabin Retreat",
     "description": "Rustic cabin nestled in the mountains for a peaceful retreat",
     "publishDate": "2022-03-10T09:00:00",
-    "city": "Aspen",
+    "city": "Brussels",
     "previewImage": "cabin1.jpg",
     "photos": ["cabinphoto1.jpg", "cabinphoto2.jpg", "cabinphoto3.jpg"],
     "isPremium": false,
@@ -60,7 +64,9 @@
     "facilities": ["Breakfast"],
     "author": {
       "name": "Bob Johnson",
-      "email": "bob.johnson@example.com"
+      "email": "bob.johnson@example.com",
+      "password": "2343422343",
+      "userType": "pro"
     },
     "commentsCount": 8,
     "coordinates": [39.1911, -106.8175]
@@ -69,7 +75,7 @@
     "title": "City Studio Loft",
     "description": "Modern studio loft in the city center",
     "publishDate": "2022-04-05T08:00:00",
-    "city": "San Francisco",
+    "city": "Amsterdam",
     "previewImage": "loft1.jpg",
     "photos": ["loftphoto1.jpg", "loftphoto2.jpg", "loftphoto3.jpg"],
     "isPremium": true,
@@ -82,7 +88,9 @@
     "facilities": ["Breakfast"],
     "author": {
       "name": "Emily Brown",
-      "email": "emily.brown@example.com"
+      "email": "emily.brown@example.com",
+      "password": "absaasda",
+      "userType": "pro"
     },
     "commentsCount": 12,
     "coordinates": [37.7749, -122.4194]
@@ -91,7 +99,7 @@
     "title": "Coastal Cottage",
     "description": "Charming cottage by the sea for a relaxing escape",
     "publishDate": "2022-05-20T11:00:00",
-    "city": "Charleston",
+    "city": "Hamburg",
     "previewImage": "cottage1.jpg",
     "photos": ["cottagephoto1.jpg", "cottagephoto2.jpg", "cottagephoto3.jpg"],
     "isPremium": false,
@@ -104,7 +112,9 @@
     "facilities": ["Breakfast"],
     "author": {
       "name": "Sarah Miller",
-      "email": "sarah.miller@example.com"
+      "email": "sarah.miller@example.com",
+      "password": "absaasda",
+      "userType": "regular"
     },
     "commentsCount": 7,
     "coordinates": [32.7765, -79.9311]
@@ -113,7 +123,7 @@
     "title": "Ski Chalet in the Alps",
     "description": "Spectacular chalet for winter adventures in the Alps",
     "publishDate": "2022-06-12T09:30:00",
-    "city": "Chamonix",
+    "city": "Hamburg",
     "previewImage": "chalet1.jpg",
     "photos": ["chaletphoto1.jpg", "chaletphoto2.jpg", "chaletphoto3.jpg"],
     "isPremium": true,
@@ -126,7 +136,9 @@
     "facilities": ["Breakfast"],
     "author": {
       "name": "Michael Wilson",
-      "email": "michael.wilson@example.com"
+      "email": "michael.wilson@example.com",
+      "password": "absaasda",
+      "userType": "regular"
     },
     "commentsCount": 20,
     "coordinates": [45.9237, 6.8694]
@@ -135,7 +147,7 @@
     "title": "Urban Penthouse",
     "description": "Luxurious penthouse with stunning city views",
     "publishDate": "2022-07-18T14:00:00",
-    "city": "Chicago",
+    "city": "Dusseldorf",
     "previewImage": "penthouse1.jpg",
     "photos": ["penthousephoto1.jpg", "penthousephoto2.jpg", "penthousephoto3.jpg"],
     "isPremium": true,
@@ -148,7 +160,9 @@
     "facilities": ["Breakfast"],
     "author": {
       "name": "Laura Anderson",
-      "email": "laura.anderson@example.com"
+      "email": "laura.anderson@example.com",
+      "password": "absaasda",
+      "userType": "regular"
     },
     "commentsCount": 15,
     "coordinates": [41.8781, -87.6298]
@@ -157,7 +171,7 @@
     "title": "Rural Farmhouse",
     "description": "Quaint farmhouse surrounded by nature",
     "publishDate": "2022-08-25T10:30:00",
-    "city": "Provence",
+    "city": "Dusseldorf",
     "previewImage": "farmhouse1.jpg",
     "photos": ["farmhousephoto1.jpg", "farmhousephoto2.jpg", "farmhousephoto3.jpg"],
     "isPremium": false,
@@ -170,7 +184,9 @@
     "facilities": ["Breakfast"],
     "author": {
       "name": "Mark Davis",
-      "email": "mark.davis@example.com"
+      "email": "mark.davis@example.com",
+      "password": "absaasda",
+      "userType": "regular"
     },
     "commentsCount": 10,
     "coordinates": [43.9354, 4.8183]

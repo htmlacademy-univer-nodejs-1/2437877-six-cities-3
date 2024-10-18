@@ -10,8 +10,10 @@
   "main": "main.js",
   "scripts": {
     "prebuild": "node -p \"'export const projectVersion = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "start tool": "npm run build && node ./dist/main.js",
+    "start tool": "npm run build && node ./dist/main.cli.js",
     "start server": "npm run build && node ./dist/Application.js | pino-pretty -c",
+    "generate data": "npm run build && node ./dist/main.cli.js generate 5 C://testuserData http://localhost:3000",
+    "import data": "npm run build && node ./dist/main.cli.js import C://testuserData mongodb://admin:test@127.0.0.1:27017/sales?authSource=admin",
     "build": "npm run clean && npm run compile",
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
