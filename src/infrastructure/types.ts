@@ -7,4 +7,7 @@ export const TYPES = {
   UserDbo: Symbol.for('UserDbo'),
   RentalOfferService: Symbol.for('IRentalOfferService'),
   RentalOfferDbo: Symbol.for('RentalOfferDbo'),
+  CommentModel: Symbol.for('CommentModel'),
+  CommentRepository: Symbol.for('CommentRepository'),
+  UserRepository: Symbol.for('UserRepository'),
 };
