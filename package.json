@@ -10,8 +10,10 @@
   "main": "main.js",
   "scripts": {
     "prebuild": "node -p \"'export const projectVersion = ' + JSON.stringify(require('./package.json').version) + ';'\" > src/version.ts",
-    "start tool": "npm run build && node ./dist/main.js",
+    "start tool": "npm run build && node ./dist/main.cli.js",
     "start server": "npm run build && node ./dist/Application.js | pino-pretty -c",
+    "generate data": "npm run build && node ./dist/main.cli.js generate 5 C://testuserData http://localhost:3000",
+    "import data": "npm run build && node ./dist/main.cli.js import C://testuserData mongodb://admin:test@127.0.0.1:27017/sales?authSource=admin",
     "build": "npm run clean && npm run compile",
     "lint": "eslint src/ --ext .ts",
     "compile": "tsc -p tsconfig.json",
@@ -37,6 +39,7 @@
     "npm": ">=8"
   },
   "dependencies": {
+    "@typegoose/typegoose": "^12.8.0",
     "@types/convict": "^6.1.6",
     "@types/convict-format-with-validator": "^6.0.5",
     "commander": "^12.1.0",
@@ -45,6 +48,7 @@
     "cross-env": "7.0.3",
     "dotenv": "^16.4.5",
     "inversify": "^6.0.2",
+    "mongoose": "^8.7.1",
     "pino": "^9.4.0",
     "reflect-metadata": "^0.2.2",
     "tslib": "^2.7.0"
