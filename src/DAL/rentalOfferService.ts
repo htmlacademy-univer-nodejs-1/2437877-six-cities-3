@@ -1,54 +1,67 @@
+import { injectable } from 'inversify';
 import { RentalOfferDbo, IRentalOffer } from './rentalOfferDbo.js';
-import {IRentalOfferService, IUserService} from './databaseService.js';
-import { injectable, inject } from 'inversify';
 import { RentalOffer } from '../domain/rent/RentalOffer.js';
-import {TYPES} from '../infrastructure/types.js';
-import {CommentRepository} from './comment.repository.js';
+import { RentalOfferMapper } from '../RentalOfferMapper.js';
+import { Document } from 'mongoose';
 
+// Определяем тип, который включает все свойства документа MongoDB
+type MongoDocument = Document & {
+  _id: unknown;
+  toObject(): unknown;
+};
+
+// Определяем тип для объекта с рейтингом
+type RentalOfferWithRating = IRentalOffer & MongoDocument & { rating: number };
 
 @injectable()
-export class RentalOfferService implements IRentalOfferService {
-  constructor(
-    @inject(TYPES.UserService) private userService: IUserService,
-    @inject(TYPES.CommentRepository) private commentService: CommentRepository
-  ) {}
-
+export class RentalOfferService {
   async findById(id: string): Promise<RentalOffer | null> {
-    const offerData = await RentalOfferDbo.findById(id).exec();
-    if (!offerData) {
+    const offerDbo = await RentalOfferDbo.findById(id).exec();
+    if (!offerDbo) {
       return null;
     }
 
-    const author = await this.userService.findById(offerData.author.toString());
-    if (!author) {
-      throw new Error('Author not found');
-    }
+    const rating = await offerDbo.calculateRating();
+    const offerWithRating = Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
 
-    const commentsCount = await this.commentService.countByOfferId(id);
-
-    return new RentalOffer(
-      offerData.title,
-      offerData.description,
-      offerData.publishDate,
-      offerData.city,
-      offerData.previewImage,
-      offerData.photos,
-      offerData.isPremium,
-      offerData.isFavorite,
-      offerData.rating,
-      offerData.housingType,
-      offerData.rooms,
-      offerData.guests,
-      offerData.price,
-      offerData.facilities,
-      author,
-      commentsCount,
-      offerData.coordinates
-    );
+    return RentalOfferMapper.toDomain(offerWithRating);
   }
 
-  async create(offer: Partial<IRentalOffer>): Promise<IRentalOffer> {
-    const newOffer = new RentalOfferDbo(offer);
-    return newOffer.save();
+  async findAll(): Promise<RentalOffer[]> {
+    const offersDbo = await RentalOfferDbo.find().exec();
+    const offersWithRating = await Promise.all(
+      offersDbo.map(async (offerDbo) => {
+        const rating = await offerDbo.calculateRating();
+        return Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
+      })
+    );
+
+    return offersWithRating.map(RentalOfferMapper.toDomain);
+  }
+
+  async create(offerData: Omit<IRentalOffer, keyof Document | 'calculateRating'>): Promise<RentalOffer> {
+    const newOfferDbo = new RentalOfferDbo(offerData);
+    const savedOffer = await newOfferDbo.save();
+    const rating = await savedOffer.calculateRating();
+    const offerWithRating = Object.assign(savedOffer, { rating }) as RentalOfferWithRating;
+
+    return RentalOfferMapper.toDomain(offerWithRating);
+  }
+
+  async update(id: string, offerData: Partial<Omit<IRentalOffer, keyof Document | 'calculateRating'>>): Promise<RentalOffer | null> {
+    const updatedOfferDbo = await RentalOfferDbo.findByIdAndUpdate(id, offerData, { new: true }).exec();
+    if (!updatedOfferDbo) {
+      return null;
+    }
+
+    const rating = await updatedOfferDbo.calculateRating();
+    const offerWithRating = Object.assign(updatedOfferDbo, { rating }) as RentalOfferWithRating;
+
+    return RentalOfferMapper.toDomain(offerWithRating);
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await RentalOfferDbo.findByIdAndDelete(id).exec();
+    return result !== null;
   }
 }

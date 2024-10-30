@@ -39,11 +39,11 @@ function saveDataToFile(data: RentalOffer[], filepath: string) {
     offer.guests,
     offer.price,
     offer.facilities.join(','),
-    offer.author.name,
-    offer.author.userType,
-    offer.author.avatar,
-    offer.author.email,
-    offer.author.password,
+    offer.authorId.name,
+    offer.authorId.userType,
+    offer.authorId.avatar,
+    offer.authorId.email,
+    offer.authorId.password,
     offer.commentsCount,
     offer.coordinates.join(',')
   ].join('\t')).join('\n');
@@ -78,11 +78,11 @@ program
     for (const databaseClientElement of data) {
       const offer = new RentalOfferDbo(databaseClientElement);
       try {
-        const existingUser = await userService.findByEmail(databaseClientElement.author.email);
+        const existingUser = await userService.findByEmail(databaseClientElement.authorId.email);
         if(existingUser){
           offer.author = existingUser._id;
         }else {
-          const {_id} = await userService.create(databaseClientElement.author);
+          const {_id} = await userService.create(databaseClientElement.authorId);
           offer.author = _id;
         }
       }catch (e) { /* empty */ }

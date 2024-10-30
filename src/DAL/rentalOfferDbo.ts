@@ -3,7 +3,11 @@ import {Facilities} from '../domain/rent/Facilities.js';
 import {HousingType} from '../domain/rent/HousingType.js';
 import {City} from '../domain/rent/City.js';
 
-export interface IRentalOffer extends Document {
+interface IRentalOfferMethods {
+  calculateRating(): Promise<number>;
+}
+
+export interface IRentalOffer extends Document, IRentalOfferMethods {
   title: string;
   description: string;
   publishDate: Date;
@@ -12,7 +16,6 @@ export interface IRentalOffer extends Document {
   photos: string[];
   isPremium: boolean;
   isFavorite: boolean;
-  rating: number;
   housingType: HousingType;
   rooms: number;
   guests: number;
@@ -61,12 +64,6 @@ const RentalOfferSchema: Schema = new Schema({
     type: Boolean,
     required: true
   },
-  rating: {
-    type: Number,
-    required: true,
-    min: 1,
-    max: 5
-  },
   housingType: {
     type: String,
     required: true,
@@ -111,5 +108,22 @@ const RentalOfferSchema: Schema = new Schema({
 },{
   timestamps: true
 });
+
+RentalOfferSchema.virtual('rating').get(function(this: IRentalOffer) {
+  return this.calculateRating();
+});
+
+
+RentalOfferSchema.methods.calculateRating = async function(this: IRentalOffer) {
+  const CommentModel = mongoose.model('Comment');
+  const comments = await CommentModel.find({ rentalOffer: this._id });
+
+  if (comments.length === 0) {
+    return 0;
+  }
+
+  const totalRating = comments.reduce((sum, comment) => sum + comment.rating, 0);
+  return Number((totalRating / comments.length).toFixed(1));
+};
 
 export const RentalOfferDbo = mongoose.model<IRentalOffer>('RentalOffer', RentalOfferSchema);
