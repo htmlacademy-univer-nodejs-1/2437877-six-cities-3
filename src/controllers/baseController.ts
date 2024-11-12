@@ -17,6 +17,10 @@ export abstract class BaseController {
     });
   }
 
+  protected sendNoContent(res: Response): Response {
+    return res.status(204).send();
+  }
+
   protected sendBadRequest(
     res: Response,
     errorMessage: string
