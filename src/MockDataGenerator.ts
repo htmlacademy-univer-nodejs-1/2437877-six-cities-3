@@ -48,7 +48,7 @@ export async function generateUniqueRentalOffers(n: number, url: string): Promis
       getRandomElement(availableData).guests,
       getRandomElement(availableData).price,
       getRandomElement(availableData).facilities,
-      getRandomElement(availableData).author,
+      getRandomElement(availableData).authorId,
       getRandomElement(availableData).commentsCount,
       getRandomElement(availableData).coordinates
     );

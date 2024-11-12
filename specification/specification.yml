@@ -1,0 +1,558 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Rental Application API
+  description: API for creating, editing, and viewing rental listings and comments
+
+paths:
+  /login:
+    post:
+      summary: Authenticate user and obtain access token
+      description: Endpoint for users to authenticate and obtain an access token for accessing the protected area
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Access token for authorized requests
+        '401':
+          description: Unauthorized, incorrect login or password
+
+  /logout:
+    post:
+      summary: Terminate user session
+      description: Endpoint for authorized users to terminate their session and log out
+      responses:
+        '200':
+          description: Session terminated successfully
+        '401':
+          description: Unauthorized, user not authenticated
+
+  /check-status:
+    get:
+      summary: Check user status
+      description: Endpoint to check if user is authenticated based on session token
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            type: string
+            description: Session token for user authentication
+      responses:
+        '200':
+          description: User is authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized, user not authenticated
+
+  /users:
+    post:
+      summary: Create a new user
+      description: Endpoint for anonymous clients to create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request, validation error
+        '409':
+          description: Conflict, user with the same email already exists
+
+  /offers:
+    get:
+      summary: Get a list of rental listings
+      description: Endpoint to retrieve a list of rental listings. Sorted by publicationDate
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of listings to return
+          required: false
+          schema:
+            type: integer
+            default: 60
+      responses:
+        '200':
+          description: List of rental listings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalListing'
+        '400':
+          description: Bad request, validation error
+    post:
+      summary: Create a new rental listing
+      description: Endpoint for authorized clients to create new rental listings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Offer'
+      responses:
+        '200':
+          description: New offer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '401':
+          description: Unauthorized, client needs to be authenticated
+        '400':
+          description: Bad request, validation error
+
+    put:
+      summary: Update a rental listing
+      description: Endpoint for authorized clients to update their own rental listings
+      parameters:
+        - name: offerId
+          in: path
+          description: ID of the offer to update
+          required: true
+          schema:
+              type: string
+              format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Offer'
+      responses:
+        '200':
+          description: Offer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '401':
+          description: Unauthorized, client needs to be authenticated
+        '403':
+          description: Forbidden, client can only update their own listings
+        '400':
+          description: Bad request, validation error
+
+    delete:
+      summary: Delete a rental listing
+      description: Endpoint for authorized clients to delete their own rental listings
+      responses:
+        '204':
+          description: Offer deleted successfully, comments deleted automatically
+        '401':
+          description: Unauthorized, client needs to be authenticated
+        '403':
+          description: Forbidden, client can only delete their own listings
+
+  /offers/{offerId}:
+    get:
+      summary: Get detailed information about a rental listing
+      description: Endpoint to retrieve detailed information about a rental listing
+      parameters:
+        - name: offerId
+          in: path
+          description: ID of the rental listing to retrieve details for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detailed information about the rental listing retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferWithFavoriteFlag'
+        '404':
+          description: Rental listing not found
+
+  /offers/{offerId}/comments:
+    get:
+      summary: Get comments for a rental listing
+      description: Endpoint to retrieve comments for a specific rental listing. The service always returns a list of the 50 (or fewer) latest comments, sorted by publication date in descending order.
+      parameters:
+        - name: offerId
+          in: path
+          description: ID of the rental listing to retrieve comments for
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '404':
+          description: Rental listing not found
+
+    post:
+      summary: Add a new comment to a rental listing
+      description: Endpoint for authorized clients to add a new comment to a rental listing
+      parameters:
+        - name: offerId
+          in: path
+          description: ID of the rental listing to add a comment to
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        '200':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '401':
+          description: Unauthorized, client needs to be authenticated
+        '400':
+          description: Bad request, validation error
+
+  /offers/premium:
+    get:
+      summary: Get premium offers for a city
+      description: Endpoint to get a list of premium offers for a specific city. Max 3. Sorted by publicationDate
+      parameters:
+        - name: city
+          in: query
+          description: Name of the city for premium offers
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of premium offers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Offer'
+        '404':
+          description: No premium offers found for the city
+
+  /offers/favorite:
+    get:
+      summary: Get favorite offers
+      description: Endpoint to get a list of offers added to favorites
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            type: string
+            description: Session token for user authentication
+      responses:
+        '200':
+          description: List of favorite offers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Offer'
+        '401':
+          description: Unauthorized, user not authenticated
+
+  /offers/{offerId}/favorite:
+    post:
+      summary: Add offer to favorites
+      description: Endpoint to add an offer to favorites
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            type: string
+            description: Session token for user authentication
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the offer to add to favorites
+      responses:
+        '200':
+          description: Offer added to favorites successfully
+        '401':
+          description: Unauthorized, user not authenticated
+
+    delete:
+      summary: Remove offer from favorites
+      description: Endpoint to remove an offer from favorites
+      parameters:
+        - name: token
+          in: header
+          required: true
+          schema:
+            type: string
+            description: Session token for user authentication
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: ID of the offer to remove from favorites
+      responses:
+        '200':
+          description: Offer removed from favorites successfully
+        '401':
+          description: Unauthorized, user not authenticated
+
+components:
+  schemas:
+    Offer:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+        publicationDate:
+          type: string
+          format: date-time
+        city:
+          type: string
+          enum:
+            - Paris
+            - Cologne
+            - Brussels
+            - Amsterdam
+            - Hamburg
+            - Dusseldorf
+        previewImage:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+          minLength: 6
+          maxLength: 6
+        premium:
+          type: boolean
+        favorite:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        propertyType:
+          type: string
+          enum:
+            - apartment
+            - house
+            - room
+            - hotel
+        rooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+        guests:
+          type: integer
+          minimum: 1
+          maximum: 10
+        rentCost:
+          type: number
+          minimum: 100
+          maximum: 100000
+        amenities:
+          type: array
+          items:
+            type: string
+            enum:
+              - Breakfast
+              - Air conditioning
+              - Laptop friendly workspace
+              - Baby seat
+              - Washer
+              - Towels
+              - Fridge
+        author:
+          $ref: '#/components/schemas/User'
+        commentsCount:
+          type: integer
+        coordinates:
+          type: object
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+      required:
+        - title
+        - description
+        - publicationDate
+        - city
+        - previewImage
+        - images
+        - premium
+        - favorite
+        - rating
+        - propertyType
+        - rooms
+        - guests
+        - rentCost
+        - amenities
+        - author
+        - coordinates
+    
+    RentalListing:
+      type: array
+      items:
+        type: object
+        properties:
+          rentCost:
+            type: number
+          title:
+            type: string
+          propertyType:
+            type: string
+          favorite:
+            type: boolean
+          publicationDate:
+            type: string
+            format: date-time
+          city:
+            type: string
+          previewImage:
+            type: string
+          premium:
+            type: boolean
+          rating:
+            type: number
+          commentsCount:
+            type: integer
+    
+    OfferWithFavoriteFlag:
+      allOf:
+        - $ref: '#/components/schemas/Offer'
+        - type: object
+          properties:
+            favorite:
+              type: boolean
+    
+    CommentBase:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+          description: Text of the comment
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+          description: Rating of the comment
+        author:
+          type: string
+          description: Author of the comment
+      required:
+        - text
+        - rating
+        - author
+    
+    Comment:
+      allOf:
+        - $ref: '#/components/schemas/CommentBase'
+        - type: object
+          properties:
+            publicationDate:
+              type: string
+              format: date-time
+              description: Publication date of the comment
+
+    CommentInput:
+      $ref: '#/components/schemas/CommentBase'
+
+    UserBase:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 15
+          description: Name of the user
+        email:
+          type: string
+          format: email
+          description: Email of the user, must be unique
+        avatar:
+          type: string
+          format: url
+          description: URL to the user's avatar image
+        userType:
+          type: string
+          enum:
+            - ordinary
+            - pro
+          description: Type of the user
+
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier for the user
+
+    UserInput:
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+        - type: object
+          properties:
+            password:
+              type: string
+              minLength: 6
+              maxLength: 12
+              description: Password of the user
+    
+    LoginInput:
+      type: object
+      properties:
+        usernameOrEmail:
+          type: string
+          description: User's login or email for authentication
+        password:
+          type: string
+          minLength: 6
+          maxLength: 12
+          description: User's password for authentication

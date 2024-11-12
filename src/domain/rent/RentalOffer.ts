@@ -1,5 +1,4 @@
 import {HousingType} from './HousingType.js';
-import {User} from '../user/User.js';
 import {Facilities} from './Facilities.js';
 import {City} from './City.js';
 
@@ -18,11 +17,11 @@ export class RentalOffer {
   guests: number;
   price: number;
   facilities: Facilities[];
-  author: User;
+  authorId: string;
   commentsCount: number;
   coordinates: [number, number];
 
-  constructor(title: string, description: string, publishDate: Date, city: City, previewImage: string, photos: string[], isPremium: boolean, isFavorite: boolean, rating: number, propertyType: HousingType, rooms: number, guests: number, price: number, amenities: Facilities[], author: User, commentsCount: number, coordinates: [number, number]) {
+  constructor(title: string, description: string, publishDate: Date, city: City, previewImage: string, photos: string[], isPremium: boolean, isFavorite: boolean, rating: number, propertyType: HousingType, rooms: number, guests: number, price: number, amenities: Facilities[], authorId: string, commentsCount: number, coordinates: [number, number]) {
     this.title = title;
     this.description = description;
     this.publishDate = publishDate;
@@ -37,7 +36,7 @@ export class RentalOffer {
     this.guests = guests;
     this.price = price;
     this.facilities = amenities;
-    this.author = author;
+    this.authorId = authorId;
     this.commentsCount = commentsCount;
     this.coordinates = coordinates;
   }

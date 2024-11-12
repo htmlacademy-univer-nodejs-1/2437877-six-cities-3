@@ -1,15 +1,15 @@
-import { Document } from 'mongoose';
 import {IUser} from './userDbo.js';
 import {IRentalOffer} from './rentalOfferDbo.js';
+import {RentalOffer} from '../domain/rent/RentalOffer.js';
+import {User} from '../domain/user/User.js';
 
-export interface IDatabaseService<T extends Document> {
-  findById(id: string): Promise<T | null>;
-  create(document: Partial<T>): Promise<T>;
+export interface IUserService {
+  findById(id: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+  create(user: Partial<IUser>): Promise<User>;
 }
 
-export interface IUserService extends IDatabaseService<IUser> {
-  findByEmail(email: string): Promise<IUser | null>;
-}
-
-export interface IRentalOfferService extends IDatabaseService<IRentalOffer> {
+export interface IRentalOfferService {
+  findById(id: string): Promise<RentalOffer | null>;
+  create(document: Partial<IRentalOffer>): Promise<IRentalOffer>;
 }

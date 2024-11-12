@@ -1,19 +1,25 @@
 import { UserDbo, IUser } from './userDbo.js';
-import {IUserService} from './databaseService.js';
-import {injectable} from 'inversify';
+import { IUserService } from './databaseService.js';
+import { injectable } from 'inversify';
+import {User} from '../domain/user/User.js';
+import {UserMapper} from '../UserMapper.js';
+
 
 @injectable()
 export class UserService implements IUserService {
-  async findById(id: string): Promise<IUser | null> {
-    return UserDbo.findById(id).exec();
+  async findById(id: string): Promise<User | null> {
+    const userDbo = await UserDbo.findById(id).exec();
+    return userDbo ? UserMapper.toDomain(userDbo) : null;
   }
 
-  async findByEmail(email: string): Promise<IUser | null> {
-    return UserDbo.findOne({ email }).exec();
+  async findByEmail(email: string): Promise<User | null> {
+    const userDbo = await UserDbo.findOne({ email }).exec();
+    return userDbo ? UserMapper.toDomain(userDbo) : null;
   }
 
-  async create(user: Partial<IUser>): Promise<IUser> {
-    const newUser = new UserDbo(user);
-    return newUser.save();
+  async create(userData: Partial<IUser>): Promise<User> {
+    const newUser = new UserDbo(userData);
+    const savedUser = await newUser.save();
+    return UserMapper.toDomain(savedUser);
   }
 }
