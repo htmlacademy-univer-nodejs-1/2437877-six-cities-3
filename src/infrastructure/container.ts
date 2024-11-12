@@ -8,7 +8,7 @@ import {IConfig} from './Config/IConfig.js';
 import {Config} from './Config/Config.js';
 import {DatabaseClient} from './Database/database-client.interface.js';
 import {MongoDatabaseClient} from './Mongo/mongo-database-client.js';
-import {IRentalOfferService, IUserService} from '../DAL/databaseService.js';
+import {IUserService} from '../DAL/databaseService.js';
 import {UserService} from '../DAL/userService.js';
 import {RentalOfferService} from '../DAL/rentalOfferService.js';
 
@@ -18,4 +18,4 @@ container.bind<Application>(TYPES.Application).to(Application).inSingletonScope(
 container.bind<IConfig>(TYPES.Config).to(Config).inSingletonScope();
 container.bind<DatabaseClient>(TYPES.DatabaseClient).to(MongoDatabaseClient).inSingletonScope();
 container.bind<IUserService>(TYPES.UserService).to(UserService).inSingletonScope();
-container.bind<IRentalOfferService>(TYPES.RentalOfferService).to(RentalOfferService).inSingletonScope();
+container.bind<RentalOfferService>(TYPES.RentalOfferService).to(RentalOfferService).inSingletonScope();

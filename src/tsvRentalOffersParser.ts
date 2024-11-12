@@ -1,20 +1,61 @@
 import * as readline from 'node:readline';
 import * as fs from 'node:fs';
-import {RentalOffer} from './domain/rent/RentalOffer.js';
 import {User} from './domain/user/User.js';
 import {HousingType} from './domain/rent/HousingType.js';
 import {Facilities} from './domain/rent/Facilities.js';
 import {UserType} from './domain/user/UserType.js';
 import {City} from './domain/rent/City.js';
 
-export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOffer[]> {
+
+export class RentalOfferWithUser {
+  title: string;
+  description: string;
+  publishDate: Date;
+  city: City;
+  previewImage: string;
+  photos: string[];
+  isPremium: boolean;
+  isFavorite: boolean;
+  rating: number;
+  housingType: HousingType;
+  rooms: number;
+  guests: number;
+  price: number;
+  facilities: Facilities[];
+  author: User;
+  commentsCount: number;
+  coordinates: [number, number];
+
+  constructor(title: string, description: string, publishDate: Date, city: City, previewImage: string, photos: string[], isPremium: boolean, isFavorite: boolean, rating: number, propertyType: HousingType, rooms: number, guests: number, price: number, amenities: Facilities[], author: User, commentsCount: number, coordinates: [number, number]) {
+    this.title = title;
+    this.description = description;
+    this.publishDate = publishDate;
+    this.city = city;
+    this.previewImage = previewImage;
+    this.photos = photos;
+    this.isPremium = isPremium;
+    this.isFavorite = isFavorite;
+    this.rating = rating;
+    this.housingType = propertyType;
+    this.rooms = rooms;
+    this.guests = guests;
+    this.price = price;
+    this.facilities = amenities;
+    this.author = author;
+    this.commentsCount = commentsCount;
+    this.coordinates = coordinates;
+  }
+}
+
+
+export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOfferWithUser[]> {
   const fileStream = fs.createReadStream(filepath);
   const rl = readline.createInterface({
     input: fileStream,
     crlfDelay: Infinity
   });
 
-  const rentalOffers: RentalOffer[] = [];
+  const rentalOffers: RentalOfferWithUser[] = [];
 
   for await (const line of rl) {
     const elements = line.split('\t');
@@ -39,10 +80,11 @@ export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOf
       price,
       facilities,
       authorId,
-      authorUserType,
-      authorAvatar,
+      authorName,
       authorEmail,
       authorPassword,
+      authorUserType,
+      authorAvatar,
       commentsCount,
       coordinates
     ] = line.split('\t');
@@ -55,9 +97,9 @@ export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOf
       throw new Error('Invalid city');
     }
 
-    const author = new User(authorId, authorEmail, authorPassword, authorUserType, authorAvatar);
+    const author = new User(parseInt(authorId), authorName, authorEmail, authorPassword, authorUserType, authorAvatar);
 
-    const rentalOffer = new RentalOffer(
+    const rentalOffer = new RentalOfferWithUser(
       title,
       description,
       new Date(publishDate),
