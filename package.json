@@ -22,10 +22,10 @@
     "runMockApi": "npx json-server src/mocks/mock-server-data.json"
   },
   "devDependencies": {
-    "@types/node": "18.17.17",
-    "@types/express": "^5.0.0",
     "@types/convict": "^6.1.6",
     "@types/convict-format-with-validator": "^6.0.5",
+    "@types/express": "^5.0.0",
+    "@types/node": "18.17.17",
     "@typescript-eslint/eslint-plugin": "6.7.0",
     "@typescript-eslint/parser": "6.7.0",
     "axios": "^1.7.7",
@@ -44,6 +44,7 @@
   "dependencies": {
     "@typegoose/typegoose": "^12.8.0",
     "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "commander": "^12.1.0",
     "convict": "^6.2.4",
     "convict-format-with-validator": "^6.2.0",
