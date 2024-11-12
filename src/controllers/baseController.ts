@@ -47,6 +47,13 @@ export abstract class BaseController {
     });
   }
 
+  protected sendConflict(res: Response, message: string = 'Conflict'): Response {
+    return res.status(409).json({
+      success: false,
+      error: message
+    });
+  }
+
   protected sendNotFound(
     res: Response,
     message: string = 'Not Found'
