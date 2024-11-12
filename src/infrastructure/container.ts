@@ -11,12 +11,13 @@ import {MongoDatabaseClient} from './Mongo/mongo-database-client.js';
 import {IUserService} from '../DAL/databaseService.js';
 import {UserService} from '../DAL/userService.js';
 import {RentalOfferService} from '../DAL/rentalOfferService.js';
-import {RouteRegister} from "../controllers/RouteRegister.js";
-import {AuthController} from "../controllers/AuthController.js";
-import {CommentRepository} from "../DAL/comment.repository.js";
-import {CommentController} from "../controllers/CommentController.js";
-import {OfferController} from "../controllers/OfferController.js";
-import {UserController} from "../controllers/UserController.js";
+import {RouteRegister} from '../controllers/RouteRegister.js';
+import {AuthController} from '../controllers/AuthController.js';
+import {CommentRepository} from '../DAL/comment.repository.js';
+import {CommentController} from '../controllers/CommentController.js';
+import {OfferController} from '../controllers/OfferController.js';
+import {UserController} from '../controllers/UserController.js';
+import {IAuthService} from './IAuthService.js';
 
 export const container = new Container();
 container.bind<ILogger>(TYPES.Logger).to(PinoLogger).inSingletonScope();
@@ -31,3 +32,4 @@ container.bind<CommentController>(TYPES.CommentController).to(CommentController)
 container.bind<CommentRepository>(TYPES.CommentRepository).to(CommentRepository).inSingletonScope();
 container.bind<OfferController>(TYPES.OfferController).to(OfferController).inSingletonScope();
 container.bind<UserController>(TYPES.OfferController).to(UserController).inSingletonScope();
+container.bind<IAuthService>(TYPES.AuthService).to().inSingletonScope();
