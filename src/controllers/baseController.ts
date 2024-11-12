@@ -37,7 +37,16 @@ export abstract class BaseController {
     });
   }
 
-  // Ресурс не найден (Not Found - 404)
+  protected sendUnauthorized(
+    res: Response,
+    message: string = 'Unauthorized'
+  ): Response {
+    return res.status(401).json({
+      success: false,
+      message
+    });
+  }
+
   protected sendNotFound(
     res: Response,
     message: string = 'Not Found'
