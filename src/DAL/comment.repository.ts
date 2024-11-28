@@ -18,7 +18,7 @@ export class CommentRepository {
     if (!author) {
       throw new Error('Author not found');
     }
-    return new Comment(doc.text, doc.createdAt, doc.rating, author.id);
+    return new Comment(doc.text, doc.createdAt, doc.rating, author);
   }
 
   async create(comment: Comment, offerId: string): Promise<Comment> {

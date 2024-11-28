@@ -1,13 +1,13 @@
 import axios from 'axios';
-import {RentalOffer} from './domain/rent/RentalOffer.js';
+import {RentalOfferWithUser} from "./tsvRentalOffersParser.js";
 
-async function fetchAvailableData(url: string): Promise<RentalOffer[]> {
-  const availableData: RentalOffer[] = [];
+async function fetchAvailableData(url: string): Promise<RentalOfferWithUser[]> {
+  const availableData: RentalOfferWithUser[] = [];
   let i = 0;
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
-      const response = await axios.get<RentalOffer>(`${url}/${i}`);
+      const response = await axios.get<RentalOfferWithUser>(`${url}/${i}`);
       const data = response.data;
       data.publishDate = new Date(data.publishDate);
       availableData.push(data);
@@ -28,12 +28,12 @@ function getRandomElement<T>(array: T[]): T {
   return array[randomIndex];
 }
 
-export async function generateUniqueRentalOffers(n: number, url: string): Promise<RentalOffer[]> {
+export async function generateUniqueRentalOffers(n: number, url: string): Promise<RentalOfferWithUser[]> {
   const availableData = await fetchAvailableData(url);
 
-  const generatedData: RentalOffer[] = [];
+  const generatedData: RentalOfferWithUser[] = [];
   for (let i = 0; i < n; i++) {
-    const uniqueOffer = new RentalOffer(
+    const uniqueOffer = new RentalOfferWithUser(
       getRandomElement(availableData).title,
       getRandomElement(availableData).description,
       getRandomElement(availableData).publishDate,
@@ -48,7 +48,7 @@ export async function generateUniqueRentalOffers(n: number, url: string): Promis
       getRandomElement(availableData).guests,
       getRandomElement(availableData).price,
       getRandomElement(availableData).facilities,
-      getRandomElement(availableData).authorId,
+      getRandomElement(availableData).author,
       getRandomElement(availableData).commentsCount,
       getRandomElement(availableData).coordinates
     );

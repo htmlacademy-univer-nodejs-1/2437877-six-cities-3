@@ -16,7 +16,7 @@ export class PinoLogger implements ILogger {
     });
 
 
-    this.logger.info('Logger created…');
+    this.logger.info('Logger created.');
   }
 
   public debug(message: string, ...args: unknown[]): void {

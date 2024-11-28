@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 export class UserMapper {
   public static toDomain(userDbo: IUser): User {
     return new User(
-      userDbo._id.toString(),
+      parseInt(userDbo._id.toString('hex').substring(18)),
       userDbo.name,
       userDbo.email,
       userDbo.password,
@@ -15,7 +15,7 @@ export class UserMapper {
     );
   }
 
-  public static toDb(user: User): Partial<IUser> {
+  public static toDbo(user: User): Partial<IUser> {
     return {
       ...(user.id && { _id: new mongoose.Types.ObjectId(user.id) }),
       name: user.name,

@@ -3,14 +3,13 @@ import { RentalOfferDbo, IRentalOffer } from './rentalOfferDbo.js';
 import { RentalOffer } from '../domain/rent/RentalOffer.js';
 import { RentalOfferMapper } from '../RentalOfferMapper.js';
 import { Document } from 'mongoose';
+import {UserDbo} from './userDbo.js';
 
-// Определяем тип, который включает все свойства документа MongoDB
 type MongoDocument = Document & {
   _id: unknown;
   toObject(): unknown;
 };
 
-// Определяем тип для объекта с рейтингом
 type RentalOfferWithRating = IRentalOffer & MongoDocument & { rating: number };
 
 @injectable()
@@ -64,4 +63,58 @@ export class RentalOfferService {
     const result = await RentalOfferDbo.findByIdAndDelete(id).exec();
     return result !== null;
   }
+
+  async getPremiumByCity(city: string, limit: number = 3): Promise<RentalOffer[]> {
+    const premiumOffersDbo = await RentalOfferDbo.find({
+      city,
+      premium: true
+    })
+      .limit(limit)
+      .sort({ publicationDate: -1 })
+      .exec();
+
+    const offersWithRating = await Promise.all(
+      premiumOffersDbo.map(async (offerDbo) => {
+        const rating = await offerDbo.calculateRating();
+        return Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
+      })
+    );
+
+    return offersWithRating.map(RentalOfferMapper.toDomain);
+  }
+
+  async getFavorites(userId: string): Promise<RentalOffer[]> {
+    const user = await UserDbo.findById(userId).populate('favoriteOffers');
+
+    if (!user) {
+      return [];
+    }
+
+    const favoriteOffersDbo = await RentalOfferDbo.find({ author:  user._id }).exec();
+    const offersWithRating = await Promise.all(
+      favoriteOffersDbo.map(async (offerDbo) => {
+        const rating = await offerDbo.calculateRating();
+        return Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
+      })
+    );
+
+    return offersWithRating.map(RentalOfferMapper.toDomain);
+  }
+
+  async addToFavorites(offerId: string, userId: string): Promise<void> {
+    await UserDbo.findByIdAndUpdate(
+      userId,
+      { $addToSet: { favoriteOffers: offerId } },
+      { new: true }
+    );
+  }
+
+  async removeFromFavorites(offerId: string, userId: string): Promise<void> {
+    await UserDbo.findByIdAndUpdate(
+      userId,
+      { $pull: { favoriteOffers: offerId } },
+      { new: true }
+    );
+  }
+
 }

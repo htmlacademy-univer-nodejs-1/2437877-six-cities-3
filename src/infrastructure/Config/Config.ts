@@ -3,8 +3,10 @@ import validator from 'convict-format-with-validator';
 import { IConfig } from './IConfig.js';
 import {injectable} from 'inversify';
 
-import dotenv from 'dotenv';
-dotenv.config();
+import * as dotenv from 'dotenv'; // Импорт всего модуля
+import path from 'path';
+const envPath = path.resolve(process.cwd(), '.env');
+dotenv.config({ path: envPath });
 
 convict.addFormats(validator);
 
@@ -35,20 +37,20 @@ export class Config implements IConfig{
       salt: {
         doc: 'Salt for passwords.',
         format: String,
-        default: 'FIWUIUWUGUOYY423423',
+        default: '',
         env: 'SALT'
       },
       DB_USER: {
         doc: 'Username to connect to the database',
         format: String,
         env: 'DB_USER',
-        default: null,
+        default: '',
       },
       DB_PASSWORD: {
         doc: 'Password to connect to the database',
         format: String,
         env: 'DB_PASSWORD',
-        default: null,
+        default: '',
       },
       DB_PORT: {
         doc: 'Port to connect to the database (MongoDB)',

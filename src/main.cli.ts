@@ -2,16 +2,17 @@
 import 'reflect-metadata';
 import {Command} from 'commander';
 import {projectVersion} from './version.js';
-import {parseTsvToRentalOffers} from './tsvRentalOffersParser.js';
+import {parseTsvToRentalOffers, RentalOfferWithUser} from './tsvRentalOffersParser.js';
 import chalk from 'chalk';
-import {RentalOffer} from './domain/rent/RentalOffer.js';
 import * as fs from 'node:fs';
 import {generateUniqueRentalOffers} from './MockDataGenerator.js';
 import {container} from './infrastructure/container.js';
-import {IRentalOfferService, IUserService} from './DAL/databaseService.js';
+import {IUserService} from './DAL/databaseService.js';
 import {TYPES} from './infrastructure/types.js';
 import {DatabaseClient} from './infrastructure/Database/database-client.interface.js';
 import {RentalOfferDbo} from './DAL/rentalOfferDbo.js';
+import {RentalOfferService} from './DAL/rentalOfferService.js';
+import mongoose from 'mongoose';
 
 const program = new Command();
 
@@ -23,7 +24,7 @@ program
   .helpCommand(false);
 
 
-function saveDataToFile(data: RentalOffer[], filepath: string) {
+function saveDataToFile(data: RentalOfferWithUser[], filepath: string) {
   const tsvData = data.map((offer) => [
     offer.title,
     offer.description,
@@ -39,11 +40,12 @@ function saveDataToFile(data: RentalOffer[], filepath: string) {
     offer.guests,
     offer.price,
     offer.facilities.join(','),
-    offer.authorId.name,
-    offer.authorId.userType,
-    offer.authorId.avatar,
-    offer.authorId.email,
-    offer.authorId.password,
+    offer.author.id,
+    offer.author.name,
+    offer.author.email,
+    offer.author.password,
+    offer.author.userType,
+    offer.author.avatar,
     offer.commentsCount,
     offer.coordinates.join(',')
   ].join('\t')).join('\n');
@@ -72,18 +74,18 @@ program
     const db = container.get<DatabaseClient>(TYPES.DatabaseClient);
     await db.connect(dbUrl);
 
-    const rentalOfferService = container.get<IRentalOfferService>(TYPES.RentalOfferService);
+    const rentalOfferService = container.get<RentalOfferService>(TYPES.RentalOfferService);
     const userService = container.get<IUserService>(TYPES.UserService);
 
     for (const databaseClientElement of data) {
       const offer = new RentalOfferDbo(databaseClientElement);
       try {
-        const existingUser = await userService.findByEmail(databaseClientElement.authorId.email);
+        const existingUser = await userService.findByEmail(databaseClientElement.author.email);
         if(existingUser){
-          offer.author = existingUser._id;
+          offer.author._id = new mongoose.Types.ObjectId(existingUser.id);
         }else {
-          const {_id} = await userService.create(databaseClientElement.authorId);
-          offer.author = _id;
+          const {id} = await userService.create(databaseClientElement.author);
+          offer.author = new mongoose.Types.ObjectId(id);
         }
       }catch (e) { /* empty */ }
 

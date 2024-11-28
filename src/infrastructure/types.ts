@@ -10,4 +10,10 @@ export const TYPES = {
   CommentModel: Symbol.for('CommentModel'),
   CommentRepository: Symbol.for('CommentRepository'),
   UserRepository: Symbol.for('UserRepository'),
+  AuthService: Symbol.for('AuthService'),
+  RouteRegister: Symbol.for('RouteRegister'),
+  AuthController: Symbol.for('AuthController'),
+  UserController: Symbol.for('UserController'),
+  OfferController: Symbol.for('OfferController'),
+  CommentController: Symbol.for('CommentController'),
 };
