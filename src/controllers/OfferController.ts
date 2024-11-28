@@ -7,6 +7,7 @@ import {RentalOfferService} from '../DAL/rentalOfferService.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {HttpMethod} from './http-method.enum.js';
 import {AuthMiddleware} from '../middleware/AuthMiddleware.js';
+import {ValidateObjectIdMiddleware} from "../middleware/validate-objectid.middleware.js";
 
 
 @injectable()
@@ -20,16 +21,16 @@ export class OfferController extends BaseController {
     const offerMiddleware = [new AuthMiddleware()];
 
     this.addRoute({ path: '/offers', method: HttpMethod.Get, handler: this.getAll });
-    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Get, handler: this.getById });
+    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Get, handler: this.getById, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
     this.addRoute({ path: '/offers/premium', method: HttpMethod.Get, handler: this.getPremium });
 
     this.addRoute({ path: '/offers', method: HttpMethod.Post, handler: this.create, middlewares: offerMiddleware });
-    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Put, handler: this.update, middlewares: offerMiddleware });
-    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Delete, handler: this.delete, middlewares: offerMiddleware });
+    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Put, handler: this.update, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
+    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Delete, handler: this.delete, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
 
     this.addRoute({ path: '/offers/favorite', method: HttpMethod.Get, handler: this.getFavorite });
-    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Post, handler: this.addToFavorites, middlewares: offerMiddleware });
-    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Delete, handler: this.removeFromFavorites, middlewares: offerMiddleware });
+    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Post, handler: this.addToFavorites, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
+    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Delete, handler: this.removeFromFavorites, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
   }
 
   async getAll(req: Request, res: Response): Promise<Response> {
