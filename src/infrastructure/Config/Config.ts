@@ -3,8 +3,8 @@ import validator from 'convict-format-with-validator';
 import { IConfig } from './IConfig.js';
 import {injectable} from 'inversify';
 
-import * as dotenv from 'dotenv'; // Импорт всего модуля
-import path from 'path';
+import * as dotenv from 'dotenv';
+import path from 'node:path';
 const envPath = path.resolve(process.cwd(), '.env');
 dotenv.config({ path: envPath });
 
@@ -64,6 +64,12 @@ export class Config implements IConfig{
         env: 'DB_NAME',
         default: 'buy-and-sell'
       },
+      UPLOAD_DIR: {
+        doc: 'Dir for static files',
+        format: String,
+        env: 'UPLOAD_DIR',
+        default: 'statics',
+      },
     });
 
 
@@ -100,5 +106,9 @@ export class Config implements IConfig{
 
   get DB_PORT(): string {
     return this.innerConfig.get('DB_PORT');
+  }
+
+  get UPLOAD_DIR(): string {
+    return this.innerConfig.get('UPLOAD_DIR');
   }
 }

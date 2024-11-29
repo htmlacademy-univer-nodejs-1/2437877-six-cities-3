@@ -7,7 +7,7 @@ import express, {
 } from 'express';
 
 import { inject, injectable } from 'inversify';
-
+import multer from 'multer';
 import { ILogger } from './infrastructure/Logger/ILogger.js';
 import { TYPES } from './infrastructure/types.js';
 import { IConfig } from './infrastructure/Config/IConfig.js';
@@ -18,6 +18,7 @@ import {UserController} from './controllers/UserController.js';
 import {OfferController} from './controllers/OfferController.js';
 import {CommentController} from './controllers/CommentController.js';
 import {ExceptionFilter} from './infrastructure/app-exeption-filter.js';
+import path from 'node:path';
 
 
 @injectable()
@@ -60,6 +61,9 @@ export class Application {
       this.logger.info(`[${req.method}] ${req.path}`);
       next();
     });
+
+    const fileMiddleware = express.static(path.join(__dirname, this.config.UPLOAD_DIR));
+    this.server.use('/uploads', fileMiddleware);
   }
 
   public async Init(): Promise<void> {
@@ -100,6 +104,22 @@ export class Application {
     this.server.use('/users', this.userController.router);
     this.server.use('/offers', this.offerController.router);
     this.server.use('/comments', this.commentController.router);
+
+
+    const storage = multer.diskStorage({
+      destination: (_, __, cb) => {
+        cb(null, this.config.UPLOAD_DIR);
+      },
+      filename: (_, file, cb) => {
+        cb(null, file.originalname);
+      },
+    });
+
+    const upload = multer({ storage });
+
+    this.server.post('/upload', upload.single('file'), (req, res) => {
+      res.status(200).json({ message: 'File uploaded successfully', file: req.file });
+    });
   }
 
   private async _initMiddleware() {
