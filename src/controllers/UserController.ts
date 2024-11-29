@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
 import {BaseController} from './baseController.js';
 import {TYPES} from '../infrastructure/types.js';
-import {IUserService} from '../DAL/databaseService.js';
+import {IUserService} from '../infrastructure/DAL/userService.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {HttpMethod} from './http-method.enum.js';
 

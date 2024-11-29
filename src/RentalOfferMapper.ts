@@ -1,4 +1,4 @@
-import {IRentalOffer} from './DAL/rentalOfferDbo.js';
+import {IRentalOffer} from './infrastructure/DAL/rentalOfferDbo.js';
 import {RentalOffer} from './domain/rent/RentalOffer.js';
 
 export class RentalOfferMapper {

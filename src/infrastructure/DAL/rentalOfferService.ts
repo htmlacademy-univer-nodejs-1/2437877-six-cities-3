@@ -1,9 +1,10 @@
 import { injectable } from 'inversify';
 import { RentalOfferDbo, IRentalOffer } from './rentalOfferDbo.js';
-import { RentalOffer } from '../domain/rent/RentalOffer.js';
-import { RentalOfferMapper } from '../RentalOfferMapper.js';
+import { RentalOffer } from '../../domain/rent/RentalOffer.js';
+import { RentalOfferMapper } from '../../RentalOfferMapper.js';
 import { Document } from 'mongoose';
 import {UserDbo} from './userDbo.js';
+import {IBaseService} from './IBaseService.js';
 
 type MongoDocument = Document & {
   _id: unknown;
@@ -13,7 +14,12 @@ type MongoDocument = Document & {
 type RentalOfferWithRating = IRentalOffer & MongoDocument & { rating: number };
 
 @injectable()
-export class RentalOfferService {
+export class RentalOfferService implements IBaseService{
+
+  async exists(id: string): Promise<boolean> {
+    return await this.findById(id) !== null;
+  }
+
   async findById(id: string): Promise<RentalOffer | null> {
     const offerDbo = await RentalOfferDbo.findById(id).exec();
     if (!offerDbo) {

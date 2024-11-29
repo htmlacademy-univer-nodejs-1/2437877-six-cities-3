@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import {Facilities} from '../domain/rent/Facilities.js';
-import {HousingType} from '../domain/rent/HousingType.js';
-import {City} from '../domain/rent/City.js';
+import {Facilities} from '../../domain/rent/Facilities.js';
+import {HousingType} from '../../domain/rent/HousingType.js';
+import {City} from '../../domain/rent/City.js';
 
 interface IRentalOfferMethods {
   calculateRating(): Promise<number>;
