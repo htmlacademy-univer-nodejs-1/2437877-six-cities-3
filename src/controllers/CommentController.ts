@@ -3,10 +3,10 @@ import { inject, injectable } from 'inversify';
 import {BaseController} from './baseController.js';
 import {TYPES} from '../infrastructure/types.js';
 import {IAuthService} from '../infrastructure/IAuthService.js';
-import {CommentRepository} from '../DAL/comment.repository.js';
+import {CommentRepository} from '../infrastructure/DAL/comment.repository.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {HttpMethod} from './http-method.enum.js';
-import {ValidateObjectIdMiddleware} from "../middleware/validate-objectid.middleware.js";
+import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
 
 @injectable()
 export class CommentController extends BaseController {
@@ -16,8 +16,8 @@ export class CommentController extends BaseController {
     @inject(TYPES.Logger) logger: ILogger
   ) {
     super(logger);
-    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Get, handler: this.getComments, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
-    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Post, handler: this.addComment, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
+    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Get, handler: this.getComments, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Post, handler: this.addComment, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
   }
 
   async getComments(req: Request, res: Response): Promise<Response> {
@@ -34,7 +34,7 @@ export class CommentController extends BaseController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if(token === undefined) {
-        throw new Error();
+        return this.sendUnauthorized(res, 'Authentication required');
       }
 
       const user = await this.authService.validateToken(token);

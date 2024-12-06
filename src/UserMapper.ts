@@ -1,4 +1,4 @@
-import {IUser} from './DAL/userDbo.js';
+import {IUser} from './infrastructure/DAL/userDbo.js';
 import {User} from './domain/user/User.js';
 import {UserType} from './domain/user/UserType.js';
 import mongoose from 'mongoose';

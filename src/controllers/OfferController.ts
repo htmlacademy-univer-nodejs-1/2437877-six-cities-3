@@ -3,11 +3,11 @@ import {inject, injectable} from 'inversify';
 import {BaseController} from './baseController.js';
 import {IAuthService} from '../infrastructure/IAuthService.js';
 import {TYPES} from '../infrastructure/types.js';
-import {RentalOfferService} from '../DAL/rentalOfferService.js';
+import {RentalOfferService} from '../infrastructure/DAL/rentalOfferService.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {HttpMethod} from './http-method.enum.js';
-import {AuthMiddleware} from '../middleware/AuthMiddleware.js';
-import {ValidateObjectIdMiddleware} from "../middleware/validate-objectid.middleware.js";
+import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
+import {CheckExistMiddleware} from '../middleware/checkExist.middleware.js';
 
 
 @injectable()
@@ -18,19 +18,20 @@ export class OfferController extends BaseController {
     @inject(TYPES.Logger) logger: ILogger
   ) {
     super(logger);
-    const offerMiddleware = [new AuthMiddleware()];
+    const checkOfferExist = new CheckExistMiddleware(this.offerService, 'offerId');
+
 
     this.addRoute({ path: '/offers', method: HttpMethod.Get, handler: this.getAll });
-    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Get, handler: this.getById, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
+    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Get, handler: this.getById, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
     this.addRoute({ path: '/offers/premium', method: HttpMethod.Get, handler: this.getPremium });
 
-    this.addRoute({ path: '/offers', method: HttpMethod.Post, handler: this.create, middlewares: offerMiddleware });
-    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Put, handler: this.update, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
-    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Delete, handler: this.delete, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
+    this.addRoute({ path: '/offers', method: HttpMethod.Post, handler: this.create });
+    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Put, handler: this.update, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Delete, handler: this.delete, middlewares: [new ValidateObjectIdMiddleware('offerId'), checkOfferExist] });
 
     this.addRoute({ path: '/offers/favorite', method: HttpMethod.Get, handler: this.getFavorite });
-    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Post, handler: this.addToFavorites, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
-    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Delete, handler: this.removeFromFavorites, middlewares: [new ValidateObjectIdMiddleware("offerId")] });
+    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Post, handler: this.addToFavorites, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Delete, handler: this.removeFromFavorites, middlewares: [new ValidateObjectIdMiddleware('offerId'), checkOfferExist] });
   }
 
   async getAll(req: Request, res: Response): Promise<Response> {
@@ -47,7 +48,7 @@ export class OfferController extends BaseController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if(token === undefined) {
-        throw new Error();
+        return this.sendUnauthorized(res, 'Authentication required');
       }
 
       const user = await this.authService.validateToken(token);
@@ -63,7 +64,7 @@ export class OfferController extends BaseController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if(token === undefined) {
-        throw new Error();
+        return this.sendUnauthorized(res, 'Authentication required');
       }
 
       await this.authService.validateToken(token);
@@ -84,7 +85,7 @@ export class OfferController extends BaseController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if(token === undefined) {
-        throw new Error();
+        return this.sendUnauthorized(res, 'Authentication required');
       }
 
       await this.authService.validateToken(token);
@@ -124,7 +125,7 @@ export class OfferController extends BaseController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if(token === undefined) {
-        throw new Error();
+        return this.sendUnauthorized(res, 'Authentication required');
       }
 
       const user = await this.authService.validateToken(token);
@@ -139,7 +140,7 @@ export class OfferController extends BaseController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if(token === undefined) {
-        throw new Error();
+        return this.sendUnauthorized(res, 'Authentication required');
       }
 
       const user = await this.authService.validateToken(token);
@@ -155,7 +156,7 @@ export class OfferController extends BaseController {
     try {
       const token = req.headers.authorization?.split(' ')[1];
       if(token === undefined) {
-        throw new Error();
+        return this.sendUnauthorized(res, 'Authentication required');
       }
 
       const user = await this.authService.validateToken(token);

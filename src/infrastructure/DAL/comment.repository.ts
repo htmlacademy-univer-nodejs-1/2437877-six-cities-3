@@ -1,8 +1,8 @@
 import { injectable, inject } from 'inversify';
 import { Model, Types } from 'mongoose';
-import {TYPES} from '../infrastructure/types.js';
-import {Comment} from '../domain/rent/Comment.js';
-import {IUserService} from './databaseService.js';
+import {TYPES} from '../types.js';
+import {Comment} from '../../domain/rent/Comment.js';
+import {IUserService} from './userService.js';
 import {IComment} from './comment.schema.js';
 
 
