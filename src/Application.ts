@@ -1,11 +1,11 @@
 import 'reflect-metadata';
 import express, {
-  Application as ExpressApplication,
+  Express,
   NextFunction,
   Request,
   Response
 } from 'express';
-import http from 'node:http';
+
 import { inject, injectable } from 'inversify';
 
 import { ILogger } from './infrastructure/Logger/ILogger.js';
@@ -13,136 +13,100 @@ import { TYPES } from './infrastructure/types.js';
 import { IConfig } from './infrastructure/Config/IConfig.js';
 import { DatabaseClient } from './infrastructure/Database/database-client.interface.js';
 import { getMongoURI } from './infrastructure/Database.js';
-import { RouteRegister } from "./controllers/RouteRegister.js";
+import {AuthController} from './controllers/AuthController.js';
+import {UserController} from './controllers/UserController.js';
+import {OfferController} from './controllers/OfferController.js';
+import {CommentController} from './controllers/CommentController.js';
+import {ExceptionFilter} from './infrastructure/app-exeption-filter.js';
 
-interface ErrorWithStatus extends Error {
-  status?: number;
-}
 
 @injectable()
 export class Application {
-  private readonly expressApp: ExpressApplication;
-  private readonly httpServer: http.Server;
+  private readonly server: Express;
 
   constructor(
     @inject(TYPES.Logger) private readonly logger: ILogger,
     @inject(TYPES.Config) private readonly config: IConfig,
     @inject(TYPES.DatabaseClient) private readonly db: DatabaseClient,
-    @inject(TYPES.RouteRegister) private readonly routeRegister: RouteRegister,
+    @inject(TYPES.AuthController) private authController: AuthController,
+    @inject(TYPES.UserController) private userController: UserController,
+    @inject(TYPES.OfferController) private offerController: OfferController,
+    @inject(TYPES.CommentController) private commentController: CommentController,
+    @inject(TYPES.ExceptionFilter) private readonly appExceptionFilter: ExceptionFilter,
   ) {
-    this.expressApp = express();
-    this.httpServer = http.createServer(this.expressApp);
+    this.server = express();
 
     this.initializeMiddleware();
   }
 
+  private async _initServer() {
+    const port = this.config.port;
+    this.server.listen(port);
+  }
+
   private initializeMiddleware(): void {
-    this.expressApp.use(express.json({
+    this.server.use(express.json({
       limit: '10mb',
       strict: true,
       type: 'application/json'
     }));
 
-    this.expressApp.use(express.urlencoded({
+    this.server.use(express.urlencoded({
       extended: true,
       limit: '10mb'
     }));
 
-    this.expressApp.use((req: Request, _: Response, next: NextFunction) => {
+    this.server.use((req: Request, _: Response, next: NextFunction) => {
       this.logger.info(`[${req.method}] ${req.path}`);
       next();
     });
   }
 
   public async Init(): Promise<void> {
-    try {
-      this.logger.info('App initializing');
+    this.logger.info('App initializing');
 
-      // Database connection
-      const url = getMongoURI(
-        this.config.DB_USER,
-        this.config.DB_PASSWORD,
-        this.config.dbip,
-        this.config.DB_PORT,
-        this.config.DB_NAME
-      );
-      await this.db.connect(url);
+    // Database connection
+    const url = getMongoURI(
+      this.config.DB_USER,
+      this.config.DB_PASSWORD,
+      this.config.dbip,
+      this.config.DB_PORT,
+      this.config.DB_NAME
+    );
 
-      // Register routes
-      this.routeRegister.registerRoutes(this.expressApp);
+    await this.db.connect(url);
 
-      // Error handling middleware
-      this.registerErrorHandling();
+    this.logger.info('Init database completed');
 
-      // Start server
-      this.httpServer.listen(this.config.port, () => {
-        this.logger.info(`Server running on port ${this.config.port}`);
-      });
-    } catch (error) {
-      this.logger.error('Failed to initialize application', error as Error);
-      process.exit(1);
-    }
+    this.logger.info('Init app-level middleware');
+    await this._initMiddleware();
+    this.logger.info('App-level middleware initialization completed');
+
+    this.logger.info('Init controllers');
+    await this._initControllers();
+    this.logger.info('Controller initialization completed');
+
+    this.logger.info('Init exception filters');
+    await this._initExceptionFilters();
+    this.logger.info('Exception filters initialization compleated');
+
+    this.logger.info('Try to init server…');
+    await this._initServer();
+    this.logger.info(`🚀 Server started on http://localhost:${this.config.port}`);
   }
 
-  private registerErrorHandling(): void {
-    this.expressApp.use((req: Request, res: Response) => {
-      res.status(404).json({
-        message: 'Not Found',
-        path: req.path
-      });
-    });
-
-    this.expressApp.use(this.errorHandler);
+  private async _initControllers() {
+    this.server.use('/categories', this.authController.router);
+    this.server.use('/users', this.userController.router);
+    this.server.use('/offers', this.offerController.router);
+    this.server.use('/comments', this.commentController.router);
   }
 
-  private errorHandler(
-    err: ErrorWithStatus,
-    _: Request,
-    res: Response,
-  ) {
-
-
-    this.logger.error(`Error: ${err.message}`, err);
-    const status = err.status || 500;
-
-    const errorResponse = {
-      message: err.message || 'Internal Server Error',
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    };
-
-    switch (err.name) {
-      case 'ValidationError':
-         res.status(400).json({
-          message: 'Validation Error',
-          errors: (err as any).errors
-        });
-         break;
-      case 'UnauthorizedError':
-         res.status(401).json({ message: 'Unauthorized' });
-         break;
-      case 'ForbiddenError':
-         res.status(403).json({ message: 'Forbidden' });
-         break;
-      default:
-         res.status(status).json(errorResponse);
-    }
+  private async _initMiddleware() {
+    this.server.use(express.json());
   }
 
-  public async close(): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      if (this.httpServer) {
-        this.httpServer.close((err) => {
-          if (err) {
-            this.logger.error('Error closing server', err);
-            reject(err);
-          } else {
-            this.logger.info('Server closed');
-            resolve();
-          }
-        });
-      } else {
-        resolve();
-      }
-    });
+  private async _initExceptionFilters() {
+    this.server.use(this.appExceptionFilter.catch.bind(this.appExceptionFilter));
   }
 }

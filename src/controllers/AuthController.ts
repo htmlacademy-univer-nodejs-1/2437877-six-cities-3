@@ -3,13 +3,19 @@ import { inject, injectable } from 'inversify';
 import {BaseController} from './baseController.js';
 import {TYPES} from '../infrastructure/types.js';
 import {IAuthService} from '../infrastructure/IAuthService.js';
+import {HttpMethod} from './http-method.enum.js';
+import {ILogger} from '../infrastructure/Logger/ILogger.js';
 
 @injectable()
 export class AuthController extends BaseController {
   constructor(
     @inject(TYPES.AuthService) private authService: IAuthService,
+    @inject(TYPES.Logger) logger: ILogger
   ) {
-    super();
+    super(logger);
+    this.addRoute({ path: '/login', method: HttpMethod.Post, handler: this.login });
+    this.addRoute({ path: '/logout', method: HttpMethod.Post, handler: this.logout });
+    this.addRoute({ path: '/check-status', method: HttpMethod.Get, handler: this.checkStatus });
   }
 
   async login(req: Request, res: Response): Promise<Response> {

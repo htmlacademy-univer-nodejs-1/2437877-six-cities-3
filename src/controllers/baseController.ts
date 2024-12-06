@@ -1,8 +1,34 @@
-import { Response } from 'express';
-import { injectable } from 'inversify';
+import {Response, Router} from 'express';
+import {injectable} from 'inversify';
+import {ILogger} from '../infrastructure/Logger/ILogger.js';
+import {Route} from './route.interface.js';
+import asyncHandler from 'express-async-handler';
 
 @injectable()
 export abstract class BaseController {
+  private readonly _router: Router;
+
+  constructor(
+    protected readonly logger: ILogger
+  ) {
+    this._router = Router();
+  }
+
+  get router() {
+    return this._router;
+  }
+
+  public addRoute(route: Route) {
+    const wrapperAsyncHandler = asyncHandler(route.handler.bind(this));
+    const middlewareHandlers = route.middlewares?.map(
+      (item) => asyncHandler(item.execute.bind(item))
+    );
+    const allHandlers = middlewareHandlers ? [...middlewareHandlers, wrapperAsyncHandler] : wrapperAsyncHandler;
+
+    this._router[route.method](route.path, allHandlers);
+    this.logger.info(`Route registered: ${route.method.toUpperCase()} ${route.path}`);
+  }
+
   protected sendOk<T>(res: Response, data: T): Response {
     return res.status(200).json({
       success: true,
