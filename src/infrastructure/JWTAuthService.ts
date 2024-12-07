@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { injectable, inject } from 'inversify';
 import { IAuthService } from './IAuthService.js';
-import { IUser, UserDbo } from './DAL/userDbo.js';
+import { IUser, UserModel } from './DAL/user.model.js';
 import { TYPES } from './types.js';
 import { ILogger } from './Logger/ILogger.js';
 import { IConfig } from './Config/IConfig.js';
@@ -24,7 +24,7 @@ export class JWTAuthService implements IAuthService {
   async register(name: string, email: string, password: string, avatar: string, userType: 'regular' | 'pro'): Promise<IUser > {
     try {
       // Проверяем, существует ли уже пользователь с таким email
-      const existingUser = await UserDbo.findOne({ email });
+      const existingUser = await UserModel.findOne({ email });
       if (existingUser) {
         throw new Error('User  with this email already exists');
       }
@@ -33,7 +33,7 @@ export class JWTAuthService implements IAuthService {
       const hashedPassword = await this.hashPassword(password);
 
       // Создаем нового пользователя
-      const newUser = new UserDbo({
+      const newUser = new UserModel({
         name,
         email,
         avatar,
@@ -53,7 +53,7 @@ export class JWTAuthService implements IAuthService {
 
   async login(usernameOrEmail: string, password: string): Promise<string> {
     try {
-      const user = await UserDbo.findOne({ email: usernameOrEmail });
+      const user = await UserModel.findOne({ email: usernameOrEmail });
 
       if (!user) {
         throw new Error('User  not found');
@@ -89,7 +89,7 @@ export class JWTAuthService implements IAuthService {
     try {
       const { payload } = await jwtVerify(token, this.secretKey);
 
-      const user = await UserDbo.findById(payload.sub);
+      const user = await UserModel.findById(payload.sub);
       if (!user) {
         throw new Error('User  not found');
       }

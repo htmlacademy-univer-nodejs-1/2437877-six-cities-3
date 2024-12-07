@@ -1,8 +1,10 @@
 import { ObjectId } from 'mongodb';
 import {IsInt, IsString, Length, Max, Min} from 'class-validator';
+import {Schema} from "mongoose";
 
 export class CommentDbo {
-  _id?: ObjectId;
+  // @ts-ignore
+  _id: Schema.Types.ObjectId;
 
   @IsString()
   @Length(5, 1024)

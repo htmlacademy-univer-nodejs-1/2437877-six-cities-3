@@ -1,4 +1,4 @@
-import {IUser} from './DAL/userDbo.js';
+import {IUser} from './DAL/user.model.js';
 import {UserType} from '../domain/user/UserType.js';
 
 export interface IAuthService {

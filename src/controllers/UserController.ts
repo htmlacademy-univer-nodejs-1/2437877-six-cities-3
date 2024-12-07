@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
-import {BaseController} from './baseController.js';
+import {BaseController} from './Common/baseController.js';
 import {TYPES} from '../infrastructure/types.js';
-import {IUserService} from '../infrastructure/DAL/userService.js';
+import {IUserService} from '../infrastructure/DAL/userService.interface.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
-import {HttpMethod} from './http-method.enum.js';
+import {HttpMethod} from './Common/http-method.enum.js';
 import {IConfig} from '../infrastructure/Config/IConfig.js';
 import {FileUploadMiddleware} from '../middleware/fileUpload.middleware.js';
 

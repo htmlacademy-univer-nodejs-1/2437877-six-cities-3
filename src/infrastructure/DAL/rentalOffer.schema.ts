@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import {Facilities} from '../../domain/rent/Facilities.js';
 import {HousingType} from '../../domain/rent/HousingType.js';
 import {City} from '../../domain/rent/City.js';
@@ -7,7 +7,8 @@ interface IRentalOfferMethods {
   calculateRating(): Promise<number>;
 }
 
-export interface IRentalOffer extends Document, IRentalOfferMethods {
+export interface IRentalOffer extends IRentalOfferMethods {
+  _id: Schema.Types.ObjectId,
   title: string;
   description: string;
   publishDate: Date;
@@ -26,7 +27,8 @@ export interface IRentalOffer extends Document, IRentalOfferMethods {
   coordinates: [number, number];
 }
 
-const RentalOfferSchema: Schema = new Schema({
+const rentalOfferSchema = new Schema<IRentalOffer>({
+  _id: Schema.Types.ObjectId,
   title: {
     type: String,
     required: true,
@@ -109,12 +111,12 @@ const RentalOfferSchema: Schema = new Schema({
   timestamps: true
 });
 
-RentalOfferSchema.virtual('rating').get(function(this: IRentalOffer) {
+rentalOfferSchema.virtual('rating').get(function(this: IRentalOffer) {
   return this.calculateRating();
 });
 
 
-RentalOfferSchema.methods.calculateRating = async function(this: IRentalOffer) {
+rentalOfferSchema.methods.calculateRating = async function(this: IRentalOffer) {
   const CommentModel = mongoose.model('Comment');
   const comments = await CommentModel.find({ rentalOffer: this._id });
 
@@ -126,4 +128,4 @@ RentalOfferSchema.methods.calculateRating = async function(this: IRentalOffer) {
   return Number((totalRating / comments.length).toFixed(1));
 };
 
-export const RentalOfferDbo = mongoose.model<IRentalOffer>('RentalOffer', RentalOfferSchema);
+export const RentalOfferSchema = mongoose.model<IRentalOffer>('RentalOffer', rentalOfferSchema);

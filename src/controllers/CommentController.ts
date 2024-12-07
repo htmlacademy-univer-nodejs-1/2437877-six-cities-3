@@ -1,21 +1,21 @@
 import { Request, Response } from 'express';
 import { inject, injectable } from 'inversify';
-import {BaseController} from './baseController.js';
 import {TYPES} from '../infrastructure/types.js';
 import {IAuthService} from '../infrastructure/IAuthService.js';
 import {CommentRepository} from '../infrastructure/DAL/comment.repository.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
-import {HttpMethod} from './http-method.enum.js';
+import {HttpMethod} from './Common/http-method.enum.js';
 import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
+import {ControllerWithAuth} from "./Common/controllerWithAuth.js";
 
 @injectable()
-export class CommentController extends BaseController {
+export class CommentController extends ControllerWithAuth {
   constructor(
     @inject(TYPES.CommentRepository) private commentService: CommentRepository,
-    @inject(TYPES.AuthService) private authService: IAuthService,
+    @inject(TYPES.AuthService) authService: IAuthService,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    super(logger);
+    super(authService, logger);
     this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Get, handler: this.getComments, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
     this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Post, handler: this.addComment, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
   }
@@ -32,18 +32,25 @@ export class CommentController extends BaseController {
 
   async addComment(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        return this.sendUnauthorized(res, 'Authentication required');
+      const user = await this.getUserFromHeader(req, res);
+      if(user === null){
+        return res;
       }
 
-      const user = await this.authService.validateToken(token);
       const offerId = req.params.offerId;
       const commentData = { ...req.body, author: user.id };
       const comment = await this.commentService.create(commentData, offerId);
       return this.sendCreated(res, comment);
     } catch (error) {
-      return this.sendUnauthorized(res, 'Authentication required');
+      if( error instanceof Error) {
+        if (error.message === 'No token provided') {
+          return this.sendUnauthorized(res, 'Authentication required');
+        }
+        return this.sendUnauthorized(res, 'Authentication failed');
+      }
+      else{
+        throw error;
+      }
     }
   }
 }

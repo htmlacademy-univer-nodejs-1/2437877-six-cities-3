@@ -1,4 +1,4 @@
-import {IUser} from './userDbo.js';
+import {IUser} from './user.model.js';
 import {User} from '../../domain/user/User.js';
 
 export interface IUserService {

@@ -1,23 +1,23 @@
 import {Request, Response} from 'express';
 import {inject, injectable} from 'inversify';
-import {BaseController} from './baseController.js';
 import {IAuthService} from '../infrastructure/IAuthService.js';
 import {TYPES} from '../infrastructure/types.js';
 import {RentalOfferService} from '../infrastructure/DAL/rentalOfferService.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
-import {HttpMethod} from './http-method.enum.js';
+import {HttpMethod} from './Common/http-method.enum.js';
 import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
 import {CheckExistMiddleware} from '../middleware/checkExist.middleware.js';
+import {ControllerWithAuth} from "./Common/controllerWithAuth.js";
 
 
 @injectable()
-export class OfferController extends BaseController {
+export class OfferController extends ControllerWithAuth {
   constructor(
     @inject(TYPES.RentalOfferService) private offerService: RentalOfferService,
-    @inject(TYPES.AuthService) private authService: IAuthService,
+    @inject(TYPES.AuthService) authService: IAuthService,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    super(logger);
+    super(authService, logger);
     const checkOfferExist = new CheckExistMiddleware(this.offerService, 'offerId');
 
 
@@ -46,12 +46,11 @@ export class OfferController extends BaseController {
 
   async create(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        return this.sendUnauthorized(res, 'Authentication required');
+      const user = await this.getUserFromHeader(req, res);
+      if(user === null){
+        return res;
       }
 
-      const user = await this.authService.validateToken(token);
       const offerData = { ...req.body, author: user.id };
       const offer = await this.offerService.create(offerData);
       return this.sendCreated(res, offer);
@@ -62,12 +61,11 @@ export class OfferController extends BaseController {
 
   async update(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        return this.sendUnauthorized(res, 'Authentication required');
+      const user = await this.getUserFromHeader(req, res);
+      if(user === null){
+        return res;
       }
 
-      await this.authService.validateToken(token);
       const offerId = req.params.offerId;
       const offerData = req.body;
 
@@ -83,12 +81,11 @@ export class OfferController extends BaseController {
 
   async delete(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        return this.sendUnauthorized(res, 'Authentication required');
+      const user = await this.getUserFromHeader(req, res);
+      if(user === null){
+        return res;
       }
 
-      await this.authService.validateToken(token);
       const offerId = req.params.offerId;
 
       await this.offerService.delete(offerId);
@@ -123,12 +120,11 @@ export class OfferController extends BaseController {
 
   async getFavorite(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        return this.sendUnauthorized(res, 'Authentication required');
+      const user = await this.getUserFromHeader(req, res);
+      if(user === null){
+        return res;
       }
 
-      const user = await this.authService.validateToken(token);
       const favoriteOffers = await this.offerService.getFavorites(user.id);
       return this.sendOk(res, favoriteOffers);
     } catch (error) {
@@ -138,12 +134,11 @@ export class OfferController extends BaseController {
 
   async addToFavorites(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        return this.sendUnauthorized(res, 'Authentication required');
+      const user = await this.getUserFromHeader(req, res);
+      if(user === null){
+        return res;
       }
 
-      const user = await this.authService.validateToken(token);
       const offerId = req.params.offerId;
       await this.offerService.addToFavorites(offerId, user.id);
       return this.sendOk(res, { message: 'Offer added to favorites' });
@@ -154,12 +149,11 @@ export class OfferController extends BaseController {
 
   async removeFromFavorites(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        return this.sendUnauthorized(res, 'Authentication required');
+      const user = await this.getUserFromHeader(req, res);
+      if(user === null){
+        return res;
       }
 
-      const user = await this.authService.validateToken(token);
       const offerId = req.params.offerId;
       await this.offerService.removeFromFavorites(offerId, user.id);
       return this.sendOk(res, { message: 'Offer removed from favorites' });

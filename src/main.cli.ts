@@ -7,10 +7,10 @@ import chalk from 'chalk';
 import * as fs from 'node:fs';
 import {generateUniqueRentalOffers} from './MockDataGenerator.js';
 import {container} from './infrastructure/container.js';
-import {IUserService} from './infrastructure/DAL/userService.js';
+import {IUserService} from './infrastructure/DAL/userService.interface.js';
 import {TYPES} from './infrastructure/types.js';
 import {DatabaseClient} from './infrastructure/Database/database-client.interface.js';
-import {RentalOfferDbo} from './infrastructure/DAL/rentalOfferDbo.js';
+import {RentalOfferSchema} from './infrastructure/DAL/rentalOffer.schema.js';
 import {RentalOfferService} from './infrastructure/DAL/rentalOfferService.js';
 import mongoose from 'mongoose';
 
@@ -78,7 +78,7 @@ program
     const userService = container.get<IUserService>(TYPES.UserService);
 
     for (const databaseClientElement of data) {
-      const offer = new RentalOfferDbo(databaseClientElement);
+      const offer = new RentalOfferSchema(databaseClientElement);
       try {
         const existingUser = await userService.findByEmail(databaseClientElement.author.email);
         if(existingUser){
