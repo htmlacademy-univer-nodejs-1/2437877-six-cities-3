@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { NextFunction, Request, Response } from 'express';
 import {ILogger} from './Logger/ILogger.js';
 import {TYPES} from './types.js';
-import {HttpError} from '../controllers/http-error.js';
+import {HttpError} from '../controllers/Common/http-error.js';
 
 export function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : '';
