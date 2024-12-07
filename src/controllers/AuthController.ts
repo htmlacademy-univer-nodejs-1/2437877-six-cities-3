@@ -5,18 +5,20 @@ import {TYPES} from '../infrastructure/types.js';
 import {IAuthService} from '../infrastructure/IAuthService.js';
 import {HttpMethod} from './Common/http-method.enum.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
+import {AuthMiddleware} from '../middleware/auth.middleware.js';
 
 @injectable()
 export class AuthController extends BaseController {
   constructor(
     @inject(TYPES.AuthService) private authService: IAuthService,
+    @inject(TYPES.AuthMiddleware) authMiddleware: AuthMiddleware,
     @inject(TYPES.Logger) logger: ILogger
   ) {
     super(logger);
     this.addRoute({ path: '/login', method: HttpMethod.Post, handler: this.login });
     this.addRoute({ path: '/register', method: HttpMethod.Post, handler: this.register });
-    this.addRoute({ path: '/logout', method: HttpMethod.Post, handler: this.logout });
-    this.addRoute({ path: '/check-status', method: HttpMethod.Get, handler: this.checkStatus });
+    this.addRoute({ path: '/logout', method: HttpMethod.Post, handler: this.logout, middlewares: [authMiddleware] });
+    this.addRoute({ path: '/check-status', method: HttpMethod.Get, handler: this.checkStatus, middlewares: [authMiddleware] });
   }
 
   async login(req: Request, res: Response): Promise<Response> {
@@ -32,8 +34,8 @@ export class AuthController extends BaseController {
   async register(req: Request, res: Response): Promise<Response> {
     try {
       const { name, email, password, avatar, userType } = req.body;
-      const newUser  = await this.authService.register(name, email, password, avatar, userType);
-      return this.sendOk(res, { user: newUser  });
+      const newUser = await this.authService.register(name, email, password, avatar, userType);
+      return this.sendOk(res, { user: newUser });
     } catch (error) {
       return this.sendUnauthorized(res, 'Registration failed');
     }

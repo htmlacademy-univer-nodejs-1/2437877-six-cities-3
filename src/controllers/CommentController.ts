@@ -7,17 +7,19 @@ import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {HttpMethod} from './Common/http-method.enum.js';
 import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
 import {ControllerWithAuth} from './Common/controllerWithAuth.js';
+import {AuthMiddleware} from '../middleware/auth.middleware.js';
 
 @injectable()
 export class CommentController extends ControllerWithAuth {
   constructor(
     @inject(TYPES.CommentRepository) private commentService: CommentRepository,
     @inject(TYPES.AuthService) authService: IAuthService,
+    @inject(TYPES.AuthMiddleware) authMiddleware: AuthMiddleware,
     @inject(TYPES.Logger) logger: ILogger
   ) {
     super(authService, logger);
     this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Get, handler: this.getComments, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
-    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Post, handler: this.addComment, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Post, handler: this.addComment, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId')] });
   }
 
   async getComments(req: Request, res: Response): Promise<Response> {

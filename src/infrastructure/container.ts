@@ -22,6 +22,7 @@ import {Model} from 'mongoose';
 import {IUser, UserModel} from './DAL/user.model.js';
 import {IRentalOffer, RentalOfferSchema} from './DAL/rentalOffer.schema.js';
 import {UserRepository} from './DAL/user.repository.js';
+import {AuthMiddleware} from '../middleware/auth.middleware.js';
 
 export const container = new Container();
 container.bind<ILogger>(TYPES.Logger).to(PinoLogger).inSingletonScope();
@@ -44,3 +45,5 @@ container.bind<Model<IComment>>(TYPES.CommentModel).toConstantValue(CommentModel
 
 container.bind<Model<IRentalOffer>>(TYPES.RentalOffer).toConstantValue(RentalOfferSchema);
 container.bind<RentalOfferService>(TYPES.RentalOfferService).to(RentalOfferService).inSingletonScope();
+
+container.bind<AuthMiddleware>(TYPES.AuthMiddleware).to(AuthMiddleware).inSingletonScope();
