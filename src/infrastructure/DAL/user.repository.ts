@@ -2,7 +2,7 @@ import { injectable, inject } from 'inversify';
 import { Model } from 'mongoose';
 import { TYPES } from '../types.js';
 import { ILogger } from '../Logger/ILogger.js';
-import {IUser} from "./user.model.js";
+import {IUser} from './user.model.js';
 
 @injectable()
 export class UserRepository {

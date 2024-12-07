@@ -6,7 +6,7 @@ import {CommentRepository} from '../infrastructure/DAL/comment.repository.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {HttpMethod} from './Common/http-method.enum.js';
 import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
-import {ControllerWithAuth} from "./Common/controllerWithAuth.js";
+import {ControllerWithAuth} from './Common/controllerWithAuth.js';
 
 @injectable()
 export class CommentController extends ControllerWithAuth {
@@ -38,17 +38,16 @@ export class CommentController extends ControllerWithAuth {
       }
 
       const offerId = req.params.offerId;
-      const commentData = { ...req.body, author: user.id };
+      const commentData = { ...req.body, author: user._id };
       const comment = await this.commentService.create(commentData, offerId);
       return this.sendCreated(res, comment);
     } catch (error) {
-      if( error instanceof Error) {
+      if(error instanceof Error) {
         if (error.message === 'No token provided') {
           return this.sendUnauthorized(res, 'Authentication required');
         }
         return this.sendUnauthorized(res, 'Authentication failed');
-      }
-      else{
+      } else{
         throw error;
       }
     }

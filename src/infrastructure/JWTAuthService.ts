@@ -1,12 +1,19 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { injectable, inject } from 'inversify';
 import { IAuthService } from './IAuthService.js';
-import { IUser, UserModel } from './DAL/user.model.js';
+import { IUser } from './DAL/user.model.js';
 import { TYPES } from './types.js';
 import { ILogger } from './Logger/ILogger.js';
 import { IConfig } from './Config/IConfig.js';
 import { createSecretKey, KeyObject } from 'node:crypto';
 import bcrypt from 'bcrypt';
+import {UserRepository} from './DAL/user.repository.js';
+import {ObjectId} from 'mongodb';
+
+export type JWTPayload = {
+  readonly userId: string;
+  readonly email: string;
+};
 
 @injectable()
 export class JWTAuthService implements IAuthService {
@@ -16,7 +23,8 @@ export class JWTAuthService implements IAuthService {
 
   constructor(
     @inject(TYPES.Logger) private readonly logger: ILogger,
-    @inject(TYPES.Config) private readonly config: IConfig
+    @inject(TYPES.Config) private readonly config: IConfig,
+    @inject(TYPES.UserService) private readonly userRepository: UserRepository
   ) {
     this.secretKey = createSecretKey(this.config.JWT_SECRET, 'utf-8');
   }
@@ -24,7 +32,7 @@ export class JWTAuthService implements IAuthService {
   async register(name: string, email: string, password: string, avatar: string, userType: 'regular' | 'pro'): Promise<IUser > {
     try {
       // Проверяем, существует ли уже пользователь с таким email
-      const existingUser = await UserModel.findOne({ email });
+      const existingUser = await this.userRepository.findByEmail(email);
       if (existingUser) {
         throw new Error('User  with this email already exists');
       }
@@ -33,16 +41,16 @@ export class JWTAuthService implements IAuthService {
       const hashedPassword = await this.hashPassword(password);
 
       // Создаем нового пользователя
-      const newUser = new UserModel({
+      const newUser: IUser = {
+        _id: new ObjectId(),
         name,
         email,
         avatar,
         password: hashedPassword,
         userType,
-      });
+      };
 
-      // Сохраняем пользователя в базе данных
-      await newUser .save();
+      await this.userRepository.create(newUser);
 
       return newUser ;
     } catch (error) {
@@ -51,9 +59,9 @@ export class JWTAuthService implements IAuthService {
     }
   }
 
-  async login(usernameOrEmail: string, password: string): Promise<string> {
+  async login(username: string, password: string): Promise<string> {
     try {
-      const user = await UserModel.findOne({ email: usernameOrEmail });
+      const user = await this.userRepository.findById(username);
 
       if (!user) {
         throw new Error('User  not found');
@@ -66,7 +74,7 @@ export class JWTAuthService implements IAuthService {
       }
 
       const token = await this.generateToken(user);
-      this.tokenWhitelist.add(token); // Добавляем токен в белый список
+      this.tokenWhitelist.add(token);
       return token;
     } catch (error) {
       this.logger.error('Login error', error as Error);
@@ -75,13 +83,11 @@ export class JWTAuthService implements IAuthService {
   }
 
   async logout(token: string): Promise<void> {
-    // Удаляем токен из белого списка
     this.tokenWhitelist.delete(token);
     return Promise.resolve();
   }
 
   async validateToken(token: string): Promise<IUser > {
-    // Проверяем, находится ли токен в белом списке
     if (!this.tokenWhitelist.has(token)) {
       throw new Error('Token is not valid or has been revoked');
     }
@@ -89,9 +95,9 @@ export class JWTAuthService implements IAuthService {
     try {
       const { payload } = await jwtVerify(token, this.secretKey);
 
-      const user = await UserModel.findById(payload.sub);
+      const user = await this.userRepository.findById(payload.sub!);
       if (!user) {
-        throw new Error('User  not found');
+        throw new Error('User not found');
       }
 
       return user;
@@ -103,7 +109,12 @@ export class JWTAuthService implements IAuthService {
 
   private async generateToken(user: IUser): Promise<string> {
     try {
-      const token = await new SignJWT({ email: user.email })
+      if(!user._id){
+        throw new Error('Id can\'t be empty');
+      }
+
+      const payload: JWTPayload = {email: user.email, userId: user._id.toString() };
+      const token = await new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
         .setSubject(user._id.toString())
         .setIssuedAt()

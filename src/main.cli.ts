@@ -7,12 +7,12 @@ import chalk from 'chalk';
 import * as fs from 'node:fs';
 import {generateUniqueRentalOffers} from './MockDataGenerator.js';
 import {container} from './infrastructure/container.js';
-import {IUserService} from './infrastructure/DAL/userService.interface.js';
 import {TYPES} from './infrastructure/types.js';
 import {DatabaseClient} from './infrastructure/Database/database-client.interface.js';
 import {RentalOfferSchema} from './infrastructure/DAL/rentalOffer.schema.js';
 import {RentalOfferService} from './infrastructure/DAL/rentalOfferService.js';
 import mongoose from 'mongoose';
+import {UserRepository} from './infrastructure/DAL/user.repository.js';
 
 const program = new Command();
 
@@ -75,17 +75,17 @@ program
     await db.connect(dbUrl);
 
     const rentalOfferService = container.get<RentalOfferService>(TYPES.RentalOfferService);
-    const userService = container.get<IUserService>(TYPES.UserService);
+    const userService = container.get<UserRepository>(TYPES.UserService);
 
     for (const databaseClientElement of data) {
       const offer = new RentalOfferSchema(databaseClientElement);
       try {
         const existingUser = await userService.findByEmail(databaseClientElement.author.email);
         if(existingUser){
-          offer.author._id = new mongoose.Types.ObjectId(existingUser.id);
+          offer.author._id = new mongoose.Types.ObjectId(existingUser._id);
         }else {
-          const {id} = await userService.create(databaseClientElement.author);
-          offer.author = new mongoose.Types.ObjectId(id);
+          const {_id} = await userService.create(databaseClientElement.author);
+          offer.author = new mongoose.Types.ObjectId(_id);
         }
       }catch (e) { /* empty */ }
 

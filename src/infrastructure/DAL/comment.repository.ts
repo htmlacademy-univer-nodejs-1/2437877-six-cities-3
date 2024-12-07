@@ -2,15 +2,15 @@ import { injectable, inject } from 'inversify';
 import {Model, Types} from 'mongoose';
 import {TYPES} from '../types.js';
 import {Comment} from '../../domain/rent/Comment.js';
-import {IUserService} from './userService.interface.js';
 import {IComment} from './comment.schema.js';
+import {UserRepository} from './user.repository.js';
 
 
 @injectable()
 export class CommentRepository {
   constructor(
     @inject(TYPES.CommentModel) private readonly commentModel: Model<IComment>,
-    @inject(TYPES.UserService) private readonly userService: IUserService
+    @inject(TYPES.UserService) private readonly userService: UserRepository
   ) {}
 
   private async mapToComment(doc: IComment): Promise<Comment> {
@@ -26,7 +26,7 @@ export class CommentRepository {
       text: comment.text,
       publishDate: comment.publishDate,
       rating: comment.rating,
-      authorId: comment.author.id,
+      authorId: comment.author._id,
       offerId: new Types.ObjectId(offerId)
     });
     const savedComment = await newComment.save();

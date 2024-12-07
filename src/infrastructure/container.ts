@@ -8,7 +8,6 @@ import {IConfig} from './Config/IConfig.js';
 import {Config} from './Config/Config.js';
 import {DatabaseClient} from './Database/database-client.interface.js';
 import {MongoDatabaseClient} from './Database/mongo-database-client.js';
-import {IUserService} from './DAL/userService.interface.js';
 import {RentalOfferService} from './DAL/rentalOfferService.js';
 import {AuthController} from '../controllers/AuthController.js';
 import {CommentRepository} from './DAL/comment.repository.js';
@@ -17,11 +16,12 @@ import {OfferController} from '../controllers/OfferController.js';
 import {UserController} from '../controllers/UserController.js';
 import {IAuthService} from './IAuthService.js';
 import {AppExceptionFilter, ExceptionFilter} from './app-exeption-filter.js';
-import {JWTAuthService} from "./JWTAuthService.js";
-import {CommentModel, IComment} from "./DAL/comment.schema.js";
-import {Model} from "mongoose";
-import {IUser, UserModel} from "./DAL/user.model.js";
-import {IRentalOffer, RentalOfferSchema} from "./DAL/rentalOffer.schema.js";
+import {JWTAuthService} from './JWTAuthService.js';
+import {CommentModel, IComment} from './DAL/comment.schema.js';
+import {Model} from 'mongoose';
+import {IUser, UserModel} from './DAL/user.model.js';
+import {IRentalOffer, RentalOfferSchema} from './DAL/rentalOffer.schema.js';
+import {UserRepository} from './DAL/user.repository.js';
 
 export const container = new Container();
 container.bind<ILogger>(TYPES.Logger).to(PinoLogger).inSingletonScope();
@@ -32,7 +32,7 @@ container.bind<AuthController>(TYPES.AuthController).to(AuthController).inSingle
 container.bind<OfferController>(TYPES.OfferController).to(OfferController).inSingletonScope();
 container.bind<IAuthService>(TYPES.AuthService).to(JWTAuthService).inSingletonScope();
 container.bind<ExceptionFilter>(TYPES.ExceptionFilter).to(AppExceptionFilter).inSingletonScope();
-container.bind<IUserService>(TYPES.UserService).to(UserService).inSingletonScope();
+container.bind<UserRepository>(TYPES.UserService).to(UserRepository).inSingletonScope();
 
 
 container.bind<UserController>(TYPES.OfferController).to(UserController).inSingletonScope();

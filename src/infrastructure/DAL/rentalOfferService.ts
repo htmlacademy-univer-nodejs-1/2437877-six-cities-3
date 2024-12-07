@@ -2,10 +2,10 @@ import {inject, injectable} from 'inversify';
 import { RentalOfferSchema, IRentalOffer } from './rentalOffer.schema.js';
 import { RentalOffer } from '../../domain/rent/RentalOffer.js';
 import { RentalOfferMapper } from '../../RentalOfferMapper.js';
-import {Document, Model} from 'mongoose';
-import {IUser, UserModel} from './user.model.js';
+import {Document, Model, Types} from 'mongoose';
+import {IUser} from './user.model.js';
 import {IBaseService} from './IBaseService.js';
-import {TYPES} from "../types.js";
+import {TYPES} from '../types.js';
 
 
 type RentalOfferWithRating = IRentalOffer & { rating: number };
@@ -90,8 +90,8 @@ export class RentalOfferService implements IBaseService{
     return offersWithRating.map(RentalOfferMapper.toDomain);
   }
 
-  async getFavorites(userId: string): Promise<RentalOffer[]> {
-    const user = await UserModel.findById(userId).populate('favoriteOffers');
+  async getFavorites(userId: Types.ObjectId): Promise<RentalOffer[]> {
+    const user = await this.userModel.findById(userId).populate('favoriteOffers');
 
     if (!user) {
       return [];
@@ -101,14 +101,16 @@ export class RentalOfferService implements IBaseService{
     const offersWithRating = await Promise.all(
       favoriteOffersDbo.map(async (offerDbo) => {
         const rating = await offerDbo.calculateRating();
-        return Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
+        const offer = Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
+        offer.isFavorite = true;
+        return offer;
       })
     );
 
     return offersWithRating.map(RentalOfferMapper.toDomain);
   }
 
-  async addToFavorites(offerId: string, userId: string): Promise<void> {
+  async addToFavorites(offerId: string, userId: Types.ObjectId): Promise<void> {
     await this.userModel.findByIdAndUpdate(
       userId,
       { $addToSet: { favoriteOffers: offerId } },
@@ -116,7 +118,7 @@ export class RentalOfferService implements IBaseService{
     );
   }
 
-  async removeFromFavorites(offerId: string, userId: string): Promise<void> {
+  async removeFromFavorites(offerId: string, userId: Types.ObjectId): Promise<void> {
     await this.userModel.findByIdAndUpdate(
       userId,
       { $pull: { favoriteOffers: offerId } },

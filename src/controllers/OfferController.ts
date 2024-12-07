@@ -7,17 +7,17 @@ import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {HttpMethod} from './Common/http-method.enum.js';
 import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
 import {CheckExistMiddleware} from '../middleware/checkExist.middleware.js';
-import {ControllerWithAuth} from "./Common/controllerWithAuth.js";
+import {ControllerWithAuth} from './Common/controllerWithAuth.js';
 
 
 @injectable()
 export class OfferController extends ControllerWithAuth {
   constructor(
     @inject(TYPES.RentalOfferService) private offerService: RentalOfferService,
-    @inject(TYPES.AuthService) authService: IAuthService,
+    @inject(TYPES.AuthService) private authServiceLocal: IAuthService,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    super(authService, logger);
+    super(authServiceLocal, logger);
     const checkOfferExist = new CheckExistMiddleware(this.offerService, 'offerId');
 
 
@@ -36,11 +36,18 @@ export class OfferController extends ControllerWithAuth {
 
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
+      const token = req.headers.authorization?.split(' ')[1];
+      const user = await this.authServiceLocal.validateToken(token ?? '');
+      const favoriteOffers = await this.offerService.getFavorites(user._id);
+
+
       const limit = parseInt(req.query.limit as string, 10) || 60;
       const offers = await this.offerService.findAll();
-      return this.sendOk(res, offers.slice(0, limit));
-    } catch (error:any) {
-      return this.sendBadRequest(res, error.message);
+      return this.sendOk(res, offers.concat(favoriteOffers)
+        .filter((offer, index, self) => index === self.findIndex((o) => o.title === offer.title))
+        .slice(0, limit));
+    } catch (error) {
+      return this.sendBadRequest(res, (error as Error).message);
     }
   }
 
@@ -51,10 +58,10 @@ export class OfferController extends ControllerWithAuth {
         return res;
       }
 
-      const offerData = { ...req.body, author: user.id };
+      const offerData = { ...req.body, author: user._id};
       const offer = await this.offerService.create(offerData);
       return this.sendCreated(res, offer);
-    } catch (error:any) {
+    } catch (error) {
       return this.sendUnauthorized(res, 'Authentication required');
     }
   }
@@ -71,8 +78,8 @@ export class OfferController extends ControllerWithAuth {
 
       const updatedOffer = await this.offerService.update(offerId, offerData);
       return this.sendOk(res, updatedOffer);
-    } catch (error:any) {
-      if (error.message === 'Forbidden') {
+    } catch (error) {
+      if ((error as Error).message === 'Forbidden') {
         return this.sendForbidden(res, 'Can only update own offers');
       }
       return this.sendUnauthorized(res, 'Authentication required');
@@ -90,8 +97,8 @@ export class OfferController extends ControllerWithAuth {
 
       await this.offerService.delete(offerId);
       return this.sendNoContent(res);
-    } catch (error:any) {
-      if (error.message === 'Forbidden') {
+    } catch (error) {
+      if ((error as Error).message === 'Forbidden') {
         return this.sendForbidden(res, 'Can only delete own offers');
       }
       return this.sendUnauthorized(res, 'Authentication required');
@@ -125,7 +132,7 @@ export class OfferController extends ControllerWithAuth {
         return res;
       }
 
-      const favoriteOffers = await this.offerService.getFavorites(user.id);
+      const favoriteOffers = await this.offerService.getFavorites(user._id);
       return this.sendOk(res, favoriteOffers);
     } catch (error) {
       return this.sendUnauthorized(res, 'Authentication required');
@@ -140,7 +147,7 @@ export class OfferController extends ControllerWithAuth {
       }
 
       const offerId = req.params.offerId;
-      await this.offerService.addToFavorites(offerId, user.id);
+      await this.offerService.addToFavorites(offerId, user._id);
       return this.sendOk(res, { message: 'Offer added to favorites' });
     } catch (error) {
       return this.sendUnauthorized(res, 'Authentication required');
@@ -155,7 +162,7 @@ export class OfferController extends ControllerWithAuth {
       }
 
       const offerId = req.params.offerId;
-      await this.offerService.removeFromFavorites(offerId, user.id);
+      await this.offerService.removeFromFavorites(offerId, user._id);
       return this.sendOk(res, { message: 'Offer removed from favorites' });
     } catch (error) {
       return this.sendUnauthorized(res, 'Authentication required');
