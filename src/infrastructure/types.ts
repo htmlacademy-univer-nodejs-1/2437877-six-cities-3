@@ -5,16 +5,24 @@ export const TYPES = {
   DatabaseClient: Symbol.for('DatabaseClient'),
   UserService: Symbol.for('IUserService'),
   UserDbo: Symbol.for('UserDbo'),
+
   RentalOfferService: Symbol.for('IRentalOfferService'),
-  RentalOfferDbo: Symbol.for('RentalOfferDbo'),
+  RentalOffer: Symbol.for('RentalOffer'),
+
   CommentModel: Symbol.for('CommentModel'),
   CommentRepository: Symbol.for('CommentRepository'),
-  UserRepository: Symbol.for('UserRepository'),
+  CommentController: Symbol.for('CommentController'),
+
   AuthService: Symbol.for('AuthService'),
   RouteRegister: Symbol.for('RouteRegister'),
   AuthController: Symbol.for('AuthController'),
+
+  UserModel: Symbol.for('UserModel'),
+  UserRepository: Symbol.for('UserRepository'),
   UserController: Symbol.for('UserController'),
+
   OfferController: Symbol.for('OfferController'),
-  CommentController: Symbol.for('CommentController'),
-  ExceptionFilter: Symbol.for('ExceptionFilter')
+  ExceptionFilter: Symbol.for('ExceptionFilter'),
+
+  AuthMiddleware: Symbol.for('AuthMiddleware'),
 };

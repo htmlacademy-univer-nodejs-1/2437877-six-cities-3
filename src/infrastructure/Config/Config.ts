@@ -70,6 +70,12 @@ export class Config implements IConfig{
         env: 'UPLOAD_DIR',
         default: 'statics',
       },
+      JWT_SECRET: {
+        doc: 'Secret key for JWT tokens',
+        format: String,
+        env: 'JWT_SECRET',
+        default: 'secret-key',
+      },
     });
 
 
@@ -110,5 +116,9 @@ export class Config implements IConfig{
 
   get UPLOAD_DIR(): string {
     return this.innerConfig.get('UPLOAD_DIR');
+  }
+
+  get JWT_SECRET(): string {
+    return this.innerConfig.get('JWT_SECRET');
   }
 }

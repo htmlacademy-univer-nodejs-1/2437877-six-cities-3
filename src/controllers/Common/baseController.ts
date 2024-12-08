@@ -1,6 +1,6 @@
 import {Response, Router} from 'express';
 import {injectable} from 'inversify';
-import {ILogger} from '../infrastructure/Logger/ILogger.js';
+import {ILogger} from '../../infrastructure/Logger/ILogger.js';
 import {Route} from './route.interface.js';
 import asyncHandler from 'express-async-handler';
 

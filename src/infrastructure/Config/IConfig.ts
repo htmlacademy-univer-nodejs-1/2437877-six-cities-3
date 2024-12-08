@@ -8,4 +8,5 @@ export interface IConfig {
   DB_PORT: string;
   DB_NAME: string;
   UPLOAD_DIR: string;
+  JWT_SECRET: string;
 }
