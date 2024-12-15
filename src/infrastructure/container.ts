@@ -29,21 +29,21 @@ container.bind<ILogger>(TYPES.Logger).to(PinoLogger).inSingletonScope();
 container.bind<Application>(TYPES.Application).to(Application).inSingletonScope();
 container.bind<IConfig>(TYPES.Config).to(Config).inSingletonScope();
 container.bind<DatabaseClient>(TYPES.DatabaseClient).to(MongoDatabaseClient).inSingletonScope();
-container.bind<AuthController>(TYPES.AuthController).to(AuthController).inSingletonScope();
-container.bind<OfferController>(TYPES.OfferController).to(OfferController).inSingletonScope();
-container.bind<IAuthService>(TYPES.AuthService).to(JWTAuthService).inSingletonScope();
 container.bind<ExceptionFilter>(TYPES.ExceptionFilter).to(AppExceptionFilter).inSingletonScope();
+
+
+container.bind<UserController>(TYPES.UserController).to(UserController).inSingletonScope();
 container.bind<UserRepository>(TYPES.UserService).to(UserRepository).inSingletonScope();
-
-
-container.bind<UserController>(TYPES.OfferController).to(UserController).inSingletonScope();
 container.bind<Model<IUser>>(TYPES.UserModel).toConstantValue(UserModel);
 
 container.bind<CommentRepository>(TYPES.CommentRepository).to(CommentRepository).inSingletonScope();
 container.bind<CommentController>(TYPES.CommentController).to(CommentController).inSingletonScope();
 container.bind<Model<IComment>>(TYPES.CommentModel).toConstantValue(CommentModel);
 
+container.bind<OfferController>(TYPES.OfferController).to(OfferController).inSingletonScope();
 container.bind<Model<IRentalOffer>>(TYPES.RentalOffer).toConstantValue(RentalOfferSchema);
 container.bind<RentalOfferService>(TYPES.RentalOfferService).to(RentalOfferService).inSingletonScope();
 
 container.bind<AuthMiddleware>(TYPES.AuthMiddleware).to(AuthMiddleware).inSingletonScope();
+container.bind<AuthController>(TYPES.AuthController).to(AuthController).inSingletonScope();
+container.bind<IAuthService>(TYPES.AuthService).to(JWTAuthService).inSingletonScope();
