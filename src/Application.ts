@@ -98,10 +98,10 @@ export class Application {
   }
 
   private async _initControllers() {
-    this.server.use('/categories', this.authController.router);
-    this.server.use('/users', this.userController.router);
-    this.server.use('/offers', this.offerController.router);
-    this.server.use('/comments', this.commentController.router);
+    this.server.use('/', this.authController.router);
+    this.server.use('/', this.userController.router);
+    this.server.use('/', this.offerController.router);
+    this.server.use('/', this.commentController.router);
 
 
     const storage = multer.diskStorage({
