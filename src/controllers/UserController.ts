@@ -16,14 +16,27 @@ export class UserController extends BaseController {
     @inject(TYPES.Logger) logger: ILogger
   ) {
     super(logger);
-    const fileUploadMiddleware = new FileUploadMiddleware(config, 'photo');
+    const fileUploadMiddleware = new FileUploadMiddleware(config, 'avatar');
 
-    this.addRoute({ path: '/users', method: HttpMethod.Post, handler: this.create, middlewares: [fileUploadMiddleware] });
+    this.addRoute({ path: '/users', method: HttpMethod.Post, handler: this.create });
+    this.addRoute({ path: '/:userId/avatar', method: HttpMethod.Post, handler: this.uploadAvatar, middlewares: [fileUploadMiddleware] });
   }
 
   async create(req: Request, res: Response): Promise<Response> {
     const userData = req.body;
     const user = await this.userService.create(userData);
     return this.sendCreated(res, user);
+  }
+
+  async uploadAvatar(req: Request, res: Response): Promise<Response> {
+    const avatarFile = req.file;
+    const userId = req.params.userId;
+    if (!avatarFile) {
+      return this.sendBadRequest(res, 'No file uploaded');
+    }
+
+    await this.userService.update(userId, {avatar: avatarFile.filename});
+
+    return res.status(200).send();
   }
 }

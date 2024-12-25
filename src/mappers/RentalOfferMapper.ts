@@ -1,9 +1,10 @@
-import {IRentalOffer} from './infrastructure/DAL/rentalOffer.schema.js';
-import {RentalOffer} from './domain/rent/RentalOffer.js';
+import {IRentalOffer} from '../infrastructure/DAL/rentalOffer.schema.js';
+import {RentalOffer} from '../domain/rent/RentalOffer.js';
 
 export class RentalOfferMapper {
   public static toDomain(offerDbo: IRentalOffer & { rating: number }): RentalOffer {
     return new RentalOffer(
+      offerDbo._id.toString(),
       offerDbo.title,
       offerDbo.description,
       offerDbo.publishDate,

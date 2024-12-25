@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import {IsInt, IsString, Length, Max, Min} from 'class-validator';
-import {Schema} from "mongoose";
+import {Schema} from 'mongoose';
 
 export class CommentDbo {
   // @ts-ignore

@@ -1,6 +1,6 @@
-import {IUser} from './infrastructure/DAL/user.model.js';
-import {User} from './domain/user/User.js';
-import {UserType} from './domain/user/UserType.js';
+import {IUser} from '../infrastructure/DAL/user.model.js';
+import {User} from '../domain/user/User.js';
+import {UserType} from '../domain/user/UserType.js';
 import mongoose from 'mongoose';
 
 export class UserMapper {
@@ -9,7 +9,7 @@ export class UserMapper {
       parseInt(userDbo._id.toString('hex').substring(18)),
       userDbo.name,
       userDbo.email,
-      userDbo.password,
+      userDbo.passwordHash,
       userDbo.userType as UserType,
       userDbo.avatar
     );
@@ -20,7 +20,7 @@ export class UserMapper {
       ...(user.id && { _id: new mongoose.Types.ObjectId(user.id) }),
       name: user.name,
       email: user.email,
-      password: user.password,
+      passwordHash: user.password,
       userType: user.userType,
       avatar: user.avatar
     };

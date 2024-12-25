@@ -31,23 +31,21 @@ export class JWTAuthService implements IAuthService {
 
   async register(name: string, email: string, password: string, avatar: string, userType: 'regular' | 'pro'): Promise<IUser > {
     try {
-      // Проверяем, существует ли уже пользователь с таким email
       const existingUser = await this.userRepository.findByEmail(email);
       if (existingUser) {
-        throw new Error('User  with this email already exists');
+        throw new Error('User with this email already exists');
       }
 
-      // Хешируем пароль
       const hashedPassword = await this.hashPassword(password);
 
-      // Создаем нового пользователя
       const newUser: IUser = {
         _id: new ObjectId(),
         name,
         email,
         avatar,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         userType,
+        favoriteOffers: []
       };
 
       await this.userRepository.create(newUser);
@@ -59,15 +57,15 @@ export class JWTAuthService implements IAuthService {
     }
   }
 
-  async login(username: string, password: string): Promise<string> {
+  async login(email: string, password: string): Promise<string> {
     try {
-      const user = await this.userRepository.findById(username);
+      const user = await this.userRepository.findByEmail(email);
 
       if (!user) {
         throw new Error('User  not found');
       }
 
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
       if (!isPasswordValid) {
         throw new Error('Invalid password');
@@ -88,14 +86,14 @@ export class JWTAuthService implements IAuthService {
   }
 
   async validateToken(token: string): Promise<IUser > {
-    if (!this.tokenWhitelist.has(token)) {
+   /* if (!this.tokenWhitelist.has(token)) {
       throw new Error('Token is not valid or has been revoked');
-    }
+    }*/
 
     try {
-      const { payload } = await jwtVerify(token, this.secretKey);
+      const { payload } = await jwtVerify<JWTPayload>(token, this.secretKey);
 
-      const user = await this.userRepository.findById(payload.sub!);
+      const user = await this.userRepository.findByEmail(payload.email);
       if (!user) {
         throw new Error('User not found');
       }
