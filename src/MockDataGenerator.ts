@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {RentalOfferWithUser} from "./tsvRentalOffersParser.js";
+import {RentalOfferWithUser} from './tsvRentalOffersParser.js';
 
 async function fetchAvailableData(url: string): Promise<RentalOfferWithUser[]> {
   const availableData: RentalOfferWithUser[] = [];
@@ -41,7 +41,6 @@ export async function generateUniqueRentalOffers(n: number, url: string): Promis
       getRandomElement(availableData).previewImage,
       getRandomElement(availableData).photos,
       getRandomElement(availableData).isPremium,
-      getRandomElement(availableData).isFavorite,
       getRandomElement(availableData).rating,
       getRandomElement(availableData).housingType,
       getRandomElement(availableData).rooms,
@@ -49,7 +48,6 @@ export async function generateUniqueRentalOffers(n: number, url: string): Promis
       getRandomElement(availableData).price,
       getRandomElement(availableData).facilities,
       getRandomElement(availableData).author,
-      getRandomElement(availableData).commentsCount,
       getRandomElement(availableData).coordinates
     );
 

@@ -1,14 +1,14 @@
-import mongoose, { Schema } from 'mongoose';
-import {Facilities} from '../../domain/rent/Facilities.js';
-import {HousingType} from '../../domain/rent/HousingType.js';
-import {City} from '../../domain/rent/City.js';
+import mongoose, {Schema} from 'mongoose';
+import {Facilities, Facility} from '../../domain/rent/Facilities.js';
+import {HousingType, HousingTypes} from '../../domain/rent/HousingType.js';
+import {Cities, City} from '../../domain/rent/City.js';
 
 interface IRentalOfferMethods {
   calculateRating(): Promise<number>;
 }
 
 export interface IRentalOffer extends IRentalOfferMethods {
-  _id: Schema.Types.ObjectId,
+  _id: mongoose.Types.ObjectId,
   title: string;
   description: string;
   publishDate: Date;
@@ -21,14 +21,14 @@ export interface IRentalOffer extends IRentalOfferMethods {
   rooms: number;
   guests: number;
   price: number;
-  facilities: Facilities[];
+  facilities: Facility[];
   author: mongoose.Types.ObjectId;
   commentsCount: number;
   coordinates: [number, number];
 }
 
 const rentalOfferSchema = new Schema<IRentalOffer>({
-  _id: Schema.Types.ObjectId,
+  _id: mongoose.Types.ObjectId,
   title: {
     type: String,
     required: true,
@@ -48,7 +48,7 @@ const rentalOfferSchema = new Schema<IRentalOffer>({
   city: {
     type: String,
     required: true,
-    enum: Object.values(City)
+    enum: Cities
   },
   previewImage: {
     type: String,
@@ -62,14 +62,10 @@ const rentalOfferSchema = new Schema<IRentalOffer>({
     type: Boolean,
     required: true
   },
-  isFavorite: {
-    type: Boolean,
-    required: true
-  },
   housingType: {
     type: String,
     required: true,
-    enum: Object.values(HousingType)
+    enum: HousingTypes
   },
   rooms: {
     type: Number,
@@ -92,16 +88,12 @@ const rentalOfferSchema = new Schema<IRentalOffer>({
   facilities: {
     type: [String],
     required: true,
-    enum: Object.values(Facilities)
+    enum: Facilities
   },
   author: {
     type: Schema.Types.ObjectId,
     ref: 'UserDbo',
     required: true
-  },
-  commentsCount: {
-    type: Number,
-    default: 0
   },
   coordinates: {
     type: [Number],

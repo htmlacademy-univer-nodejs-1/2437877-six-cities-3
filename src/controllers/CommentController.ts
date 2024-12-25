@@ -18,8 +18,8 @@ export class CommentController extends ControllerWithAuth {
     @inject(TYPES.Logger) logger: ILogger
   ) {
     super(authService, logger);
-    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Get, handler: this.getComments, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
-    this.addRoute({ path: '/offers/:offerId/comments', method: HttpMethod.Post, handler: this.addComment, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/comments/:offerId', method: HttpMethod.Get, handler: this.getComments, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/comments/:offerId', method: HttpMethod.Post, handler: this.addComment, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId')] });
   }
 
   async getComments(req: Request, res: Response): Promise<Response> {

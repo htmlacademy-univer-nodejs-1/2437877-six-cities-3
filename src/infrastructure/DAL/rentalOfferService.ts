@@ -1,11 +1,12 @@
 import {inject, injectable} from 'inversify';
 import { RentalOfferSchema, IRentalOffer } from './rentalOffer.schema.js';
 import { RentalOffer } from '../../domain/rent/RentalOffer.js';
-import { RentalOfferMapper } from '../../RentalOfferMapper.js';
-import {Document, Model, Types} from 'mongoose';
+import { RentalOfferMapper } from '../../mappers/RentalOfferMapper.js';
+import mongoose, {Document, Model, Types} from 'mongoose';
 import {IUser} from './user.model.js';
 import {IBaseService} from './IBaseService.js';
 import {TYPES} from '../types.js';
+import {OfferDto} from '../../domain/rent/offerDto.js';
 
 
 type RentalOfferWithRating = IRentalOffer & { rating: number };
@@ -45,8 +46,24 @@ export class RentalOfferService implements IBaseService{
     return offersWithRating.map(RentalOfferMapper.toDomain);
   }
 
-  async create(offerData: Omit<IRentalOffer, keyof Document | 'calculateRating'>): Promise<RentalOffer> {
-    const newOfferDbo = new RentalOfferSchema(offerData);
+  async create(authorId:mongoose.Types.ObjectId, offerData: OfferDto): Promise<RentalOffer> {
+    const newOfferDbo = new RentalOfferSchema({
+      _id: new mongoose.Types.ObjectId(),
+      title: offerData.title,
+      description: offerData.description,
+      publishDate: Date.now(),
+      city: offerData.city.name,
+      previewImage: offerData.previewImage,
+      photos: [],
+      isPremium: offerData.isPremium,
+      housingType: offerData.type,
+      bed: offerData.bedrooms,
+      author: authorId,
+      rooms: offerData.bedrooms,
+      guests: offerData.maxAdults,
+      price: offerData.price,
+      coordinates: [offerData.location.latitude, offerData.location.longitude]
+    });
     const savedOffer = await newOfferDbo.save();
     const rating = await savedOffer.calculateRating();
     const offerWithRating = Object.assign(savedOffer, { rating }) as RentalOfferWithRating;
@@ -91,13 +108,14 @@ export class RentalOfferService implements IBaseService{
   }
 
   async getFavorites(userId: Types.ObjectId): Promise<RentalOffer[]> {
-    const user = await this.userModel.findById(userId).populate('favoriteOffers');
+    const user = await this.userModel.findById(userId);
 
     if (!user) {
       return [];
     }
 
-    const favoriteOffersDbo = await this.rentalOfferModel.find({ author:  user._id }).exec();
+    const favoriteOffersDbo = await this.rentalOfferModel.find({ _id: { $in: user.favoriteOffers } }).exec();
+
     const offersWithRating = await Promise.all(
       favoriteOffersDbo.map(async (offerDbo) => {
         const rating = await offerDbo.calculateRating();

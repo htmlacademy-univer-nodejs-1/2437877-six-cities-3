@@ -19,7 +19,7 @@ import {OfferController} from './controllers/OfferController.js';
 import {CommentController} from './controllers/CommentController.js';
 import {ExceptionFilter} from './infrastructure/app-exeption-filter.js';
 import path from 'node:path';
-
+import cors from 'cors';
 
 @injectable()
 export class Application {
@@ -61,15 +61,13 @@ export class Application {
       this.logger.info(`[${req.method}] ${req.path}`);
       next();
     });
-
-    const fileMiddleware = express.static(path.join(__dirname, this.config.UPLOAD_DIR));
+    const fileMiddleware = express.static(path.join(path.resolve(), this.config.UPLOAD_DIR));
     this.server.use('/uploads', fileMiddleware);
   }
 
   public async Init(): Promise<void> {
     this.logger.info('App initializing');
 
-    // Database connection
     const url = getMongoURI(
       this.config.DB_USER,
       this.config.DB_PASSWORD,
@@ -100,10 +98,10 @@ export class Application {
   }
 
   private async _initControllers() {
-    this.server.use('/categories', this.authController.router);
-    this.server.use('/users', this.userController.router);
-    this.server.use('/offers', this.offerController.router);
-    this.server.use('/comments', this.commentController.router);
+    this.server.use('/', this.authController.router);
+    this.server.use('/', this.userController.router);
+    this.server.use('/', this.offerController.router);
+    this.server.use('/', this.commentController.router);
 
 
     const storage = multer.diskStorage({
@@ -124,6 +122,7 @@ export class Application {
 
   private async _initMiddleware() {
     this.server.use(express.json());
+    this.server.use(cors());
   }
 
   private async _initExceptionFilters() {

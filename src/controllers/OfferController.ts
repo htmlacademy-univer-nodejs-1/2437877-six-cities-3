@@ -15,7 +15,7 @@ import {AuthMiddleware} from '../middleware/auth.middleware.js';
 export class OfferController extends ControllerWithAuth {
   constructor(
     @inject(TYPES.RentalOfferService) private offerService: RentalOfferService,
-    @inject(TYPES.AuthService) private authServiceLocal: IAuthService,
+    @inject(TYPES.AuthService) authServiceLocal: IAuthService,
     @inject(TYPES.AuthMiddleware) authMiddleware: AuthMiddleware,
     @inject(TYPES.Logger) logger: ILogger
   ) {
@@ -31,17 +31,15 @@ export class OfferController extends ControllerWithAuth {
     this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Put, handler: this.update, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId')] });
     this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Delete, handler: this.delete, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId'), checkOfferExist] });
 
-    this.addRoute({ path: '/offers/favorite', method: HttpMethod.Get, handler: this.getFavorite });
-    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Post, handler: this.addToFavorites, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId')] });
-    this.addRoute({ path: '/offers/:offerId/favorite', method: HttpMethod.Delete, handler: this.removeFromFavorites, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId'), checkOfferExist] });
+    this.addRoute({ path: '/favorite', method: HttpMethod.Get, handler: this.getFavorite });
+    this.addRoute({ path: '/favorite/:offerId', method: HttpMethod.Post, handler: this.addToFavorites, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/favorite/:offerId', method: HttpMethod.Delete, handler: this.removeFromFavorites, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId'), checkOfferExist] });
   }
 
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      const user = await this.authServiceLocal.validateToken(token ?? '');
-      const favoriteOffers = await this.offerService.getFavorites(user._id);
-
+      const user = await this.getUserFromHeader(req, res);
+      const favoriteOffers = await this.offerService.getFavorites(user!._id);
 
       const limit = parseInt(req.query.limit as string, 10) || 60;
       const offers = await this.offerService.findAll();
@@ -60,8 +58,8 @@ export class OfferController extends ControllerWithAuth {
         return res;
       }
 
-      const offerData = { ...req.body, author: user._id};
-      const offer = await this.offerService.create(offerData);
+      const offerData = req.body;
+      const offer = await this.offerService.create(user._id, offerData);
       return this.sendCreated(res, offer);
     } catch (error) {
       return this.sendUnauthorized(res, 'Authentication required');

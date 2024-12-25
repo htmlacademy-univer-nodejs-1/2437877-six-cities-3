@@ -5,10 +5,6 @@ import {ILogger} from './Logger/ILogger.js';
 import {TYPES} from './types.js';
 import {HttpError} from '../controllers/Common/http-error.js';
 
-export function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : '';
-}
-
 export function createErrorObject(message: string) {
   return {
     error: message,

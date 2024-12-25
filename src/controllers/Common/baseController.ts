@@ -30,17 +30,11 @@ export abstract class BaseController {
   }
 
   protected sendOk<T>(res: Response, data: T): Response {
-    return res.status(200).json({
-      success: true,
-      data
-    });
+    return res.status(200).json(data);
   }
 
   protected sendCreated<T>(res: Response, data: T): Response {
-    return res.status(201).json({
-      success: true,
-      data
-    });
+    return res.status(201).json(data);
   }
 
   protected sendNoContent(res: Response): Response {

@@ -5,8 +5,9 @@ export interface IUser {
   name: string;
   email: string;
   avatar: string;
-  password: string;
+  passwordHash: string;
   userType: 'regular' | 'pro';
+  favoriteOffers: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -25,17 +26,16 @@ const userSchema = new Schema<IUser>({
     type: String,
     default: 'default-avatar.jpg'
   },
-  password: {
+  passwordHash: {
     type: String,
     required: true,
-    minlength: 6,
-    maxlength: 12
   },
   userType: {
     type: String,
     required: true,
     enum: ['regular', 'pro']
-  }
+  },
+  favoriteOffers: [Schema.ObjectId]
 },{
   timestamps: true
 });

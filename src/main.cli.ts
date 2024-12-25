@@ -9,10 +9,10 @@ import {generateUniqueRentalOffers} from './MockDataGenerator.js';
 import {container} from './infrastructure/container.js';
 import {TYPES} from './infrastructure/types.js';
 import {DatabaseClient} from './infrastructure/Database/database-client.interface.js';
-import {RentalOfferSchema} from './infrastructure/DAL/rentalOffer.schema.js';
 import {RentalOfferService} from './infrastructure/DAL/rentalOfferService.js';
 import mongoose from 'mongoose';
 import {UserRepository} from './infrastructure/DAL/user.repository.js';
+import {OfferDto} from './domain/rent/offerDto.js';
 
 const program = new Command();
 
@@ -33,7 +33,6 @@ function saveDataToFile(data: RentalOfferWithUser[], filepath: string) {
     offer.previewImage,
     offer.photos.join(','),
     offer.isPremium,
-    offer.isFavorite,
     offer.rating,
     offer.housingType,
     offer.rooms,
@@ -46,13 +45,31 @@ function saveDataToFile(data: RentalOfferWithUser[], filepath: string) {
     offer.author.password,
     offer.author.userType,
     offer.author.avatar,
-    offer.commentsCount,
     offer.coordinates.join(',')
   ].join('\t')).join('\n');
 
   fs.writeFileSync(filepath, tsvData);
 }
 
+const toOfferDto = (offer: RentalOfferWithUser): OfferDto => {
+  const location = {
+    latitude: offer.coordinates[1], // latitude - это второй элемент массива
+    longitude: offer.coordinates[0], // longitude - это первый элемент массива
+  };
+  return {
+    title: offer.title,
+    description: offer.description,
+    city: {name: offer.city, location:location},
+    previewImage: offer.previewImage,
+    isPremium: offer.isPremium,
+    type: offer.housingType,
+    bedrooms: offer.rooms, // Сопоставляем количество комнат с количеством спален
+    maxAdults: offer.guests, // Сопоставляем количество гостей
+    price: offer.price,
+    goods: offer.facilities, // Предполагаем, что у удобств есть поле name
+    location: location
+  };
+};
 
 program
   .command('generate')
@@ -78,19 +95,17 @@ program
     const userService = container.get<UserRepository>(TYPES.UserService);
 
     for (const databaseClientElement of data) {
-      const offer = new RentalOfferSchema(databaseClientElement);
-      try {
-        const existingUser = await userService.findByEmail(databaseClientElement.author.email);
-        if(existingUser){
-          offer.author._id = new mongoose.Types.ObjectId(existingUser._id);
-        }else {
-          const {_id} = await userService.create(databaseClientElement.author);
-          offer.author = new mongoose.Types.ObjectId(_id);
-        }
-      }catch (e) { /* empty */ }
+      let author: mongoose.Types.ObjectId;
+      const existingUser = await userService.findByEmail(databaseClientElement.author.email);
+      if(existingUser){
+        author = existingUser._id;
+      }else {
+        const {_id} = await userService.create(databaseClientElement.author);
+        author = _id;
+      }
 
       try {
-        await rentalOfferService.create(offer);
+        await rentalOfferService.create(author, toOfferDto(databaseClientElement));
       }catch (e) { /* empty */ }
 
     }

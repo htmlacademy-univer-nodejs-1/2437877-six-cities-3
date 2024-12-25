@@ -1,30 +1,34 @@
-import { Request, Response } from 'express';
-import { inject, injectable } from 'inversify';
-import {BaseController} from './Common/baseController.js';
+import {Request, Response} from 'express';
+import {inject, injectable} from 'inversify';
 import {TYPES} from '../infrastructure/types.js';
 import {IAuthService} from '../infrastructure/IAuthService.js';
 import {HttpMethod} from './Common/http-method.enum.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {AuthMiddleware} from '../middleware/auth.middleware.js';
+import {UserType} from '../domain/user/UserType.js';
+import {plainToInstance} from 'class-transformer';
+import {CreateUserDto} from './Auth/CreateUserDto.js';
+import {ControllerWithAuth} from './Common/controllerWithAuth.js';
 
 @injectable()
-export class AuthController extends BaseController {
+export class AuthController extends ControllerWithAuth {
   constructor(
-    @inject(TYPES.AuthService) private authService: IAuthService,
+    @inject(TYPES.AuthService) private authServiceLocal: IAuthService,
     @inject(TYPES.AuthMiddleware) authMiddleware: AuthMiddleware,
     @inject(TYPES.Logger) logger: ILogger
   ) {
-    super(logger);
+    super(authServiceLocal, logger);
     this.addRoute({ path: '/login', method: HttpMethod.Post, handler: this.login });
+    this.addRoute({ path: '/login', method: HttpMethod.Get, handler: this.checkStatus, middlewares: [authMiddleware] });
     this.addRoute({ path: '/register', method: HttpMethod.Post, handler: this.register });
-    this.addRoute({ path: '/logout', method: HttpMethod.Post, handler: this.logout, middlewares: [authMiddleware] });
+    this.addRoute({ path: '/logout', method: HttpMethod.Delete, handler: this.logout, middlewares: [authMiddleware] });
     this.addRoute({ path: '/check-status', method: HttpMethod.Get, handler: this.checkStatus, middlewares: [authMiddleware] });
   }
 
   async login(req: Request, res: Response): Promise<Response> {
     try {
-      const { usernameOrEmail, password } = req.body;
-      const token = await this.authService.login(usernameOrEmail, password);
+      const { email, password } = req.body;
+      const token = await this.authServiceLocal.login(email, password);
       return this.sendOk(res, { token });
     } catch (error) {
       return this.sendUnauthorized(res, 'Invalid credentials');
@@ -33,9 +37,12 @@ export class AuthController extends BaseController {
 
   async register(req: Request, res: Response): Promise<Response> {
     try {
-      const { name, email, password, avatar, userType } = req.body;
-      const newUser = await this.authService.register(name, email, password, avatar, userType);
-      return this.sendOk(res, { user: newUser });
+      const createUser = plainToInstance(CreateUserDto, req.body);
+      const { name, email, password, isPro } = createUser;
+      const isProBoolean = isPro === 'on';
+      const newUser = await this.authServiceLocal.register(name, email, password, '', isProBoolean ? UserType.Pro : UserType.Regular);
+
+      return this.sendOk(res, { id: newUser._id, email: newUser.email, name: newUser.name, avatar:newUser.avatar, userType: newUser.userType });
     } catch (error) {
       return this.sendUnauthorized(res, 'Registration failed');
     }
@@ -43,12 +50,12 @@ export class AuthController extends BaseController {
 
   async logout(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
+      const token = req.headers.authorization;
       if(token === undefined) {
         throw new Error();
       }
 
-      await this.authService.logout(token);
+      await this.authServiceLocal.logout(token);
       return this.sendOk(res, { message: 'Logged out successfully' });
     } catch (error) {
       return this.sendUnauthorized(res, 'Unable to logout');
@@ -57,12 +64,7 @@ export class AuthController extends BaseController {
 
   async checkStatus(req: Request, res: Response): Promise<Response> {
     try {
-      const token = req.headers.authorization?.split(' ')[1];
-      if(token === undefined) {
-        throw new Error();
-      }
-
-      const user = await this.authService.validateToken(token);
+      const user = await this.getUserFromHeader(req, res);
       return this.sendOk(res, user);
     } catch (error) {
       return this.sendUnauthorized(res, 'Invalid token');
