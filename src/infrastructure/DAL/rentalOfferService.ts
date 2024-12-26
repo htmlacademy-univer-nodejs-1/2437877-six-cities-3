@@ -9,7 +9,7 @@ import {TYPES} from '../types.js';
 import {OfferDto} from '../../domain/rent/offerDto.js';
 
 
-type RentalOfferWithRating = IRentalOffer & { rating: number };
+export type RentalOfferWithRating = IRentalOffer & { rating: number };
 
 @injectable()
 export class RentalOfferService implements IBaseService{
@@ -39,7 +39,7 @@ export class RentalOfferService implements IBaseService{
     const offersWithRating = await Promise.all(
       offersDbo.map(async (offerDbo) => {
         const rating = await offerDbo.calculateRating();
-        return Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
+        return Object.assign(offerDbo.toObject(), { rating:rating }) as RentalOfferWithRating;
       })
     );
 
@@ -83,18 +83,22 @@ export class RentalOfferService implements IBaseService{
     return RentalOfferMapper.toDomain(offerWithRating);
   }
 
-  async delete(id: string): Promise<boolean> {
-    const result = await this.rentalOfferModel.findByIdAndDelete(id).exec();
-    return result !== null;
+  async delete(id: mongoose.Types.ObjectId, authorId: mongoose.Types.ObjectId): Promise<boolean> {
+    const result = await this.rentalOfferModel.findOneAndDelete({
+      _id: id,
+      author: authorId
+    }).exec();
+
+    return result !== null; // Возвращаем true, если документ был найден и удален
   }
 
   async getPremiumByCity(city: string, limit: number = 3): Promise<RentalOffer[]> {
     const premiumOffersDbo = await this.rentalOfferModel.find({
-      city,
-      premium: true
+      city: city,
+      isPremium: true
     })
       .limit(limit)
-      .sort({ publicationDate: -1 })
+      .sort({ publishDate: -1 })
       .exec();
 
     const offersWithRating = await Promise.all(

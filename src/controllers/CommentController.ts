@@ -8,6 +8,7 @@ import {HttpMethod} from './Common/http-method.enum.js';
 import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middleware.js';
 import {ControllerWithAuth} from './Common/controllerWithAuth.js';
 import {AuthMiddleware} from '../middleware/auth.middleware.js';
+import mongoose from 'mongoose';
 
 @injectable()
 export class CommentController extends ControllerWithAuth {
@@ -33,25 +34,14 @@ export class CommentController extends ControllerWithAuth {
   }
 
   async addComment(req: Request, res: Response): Promise<Response> {
-    try {
-      const user = await this.getUserFromHeader(req, res);
-      if(user === null){
-        return res;
-      }
-
-      const offerId = req.params.offerId;
-      const commentData = { ...req.body, author: user._id };
-      const comment = await this.commentService.create(commentData, offerId);
-      return this.sendCreated(res, comment);
-    } catch (error) {
-      if(error instanceof Error) {
-        if (error.message === 'No token provided') {
-          return this.sendUnauthorized(res, 'Authentication required');
-        }
-        return this.sendUnauthorized(res, 'Authentication failed');
-      } else{
-        throw error;
-      }
+    const user = await this.getUserFromHeader(req, res);
+    if(user === null){
+      return res;
     }
+
+    const offerId = req.params.offerId;
+    const commentData = { ...req.body, authorId: user._id, offerId: offerId, publishDate: Date.now() };
+    const comment = await this.commentService.create(commentData, new mongoose.Types.ObjectId(offerId));
+    return this.sendCreated(res, comment);
   }
 }

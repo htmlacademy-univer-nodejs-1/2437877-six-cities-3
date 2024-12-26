@@ -18,14 +18,7 @@ export class UserController extends BaseController {
     super(logger);
     const fileUploadMiddleware = new FileUploadMiddleware(config, 'avatar');
 
-    this.addRoute({ path: '/users', method: HttpMethod.Post, handler: this.create });
     this.addRoute({ path: '/:userId/avatar', method: HttpMethod.Post, handler: this.uploadAvatar, middlewares: [fileUploadMiddleware] });
-  }
-
-  async create(req: Request, res: Response): Promise<Response> {
-    const userData = req.body;
-    const user = await this.userService.create(userData);
-    return this.sendCreated(res, user);
   }
 
   async uploadAvatar(req: Request, res: Response): Promise<Response> {

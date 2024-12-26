@@ -5,10 +5,11 @@ import {IAuthService} from '../infrastructure/IAuthService.js';
 import {HttpMethod} from './Common/http-method.enum.js';
 import {ILogger} from '../infrastructure/Logger/ILogger.js';
 import {AuthMiddleware} from '../middleware/auth.middleware.js';
-import {UserType} from '../domain/user/UserType.js';
 import {plainToInstance} from 'class-transformer';
 import {CreateUserDto} from './Auth/CreateUserDto.js';
 import {ControllerWithAuth} from './Common/controllerWithAuth.js';
+import {IUser} from '../infrastructure/DAL/user.model.js';
+import {User} from '../domain/user/User.js';
 
 @injectable()
 export class AuthController extends ControllerWithAuth {
@@ -40,9 +41,9 @@ export class AuthController extends ControllerWithAuth {
       const createUser = plainToInstance(CreateUserDto, req.body);
       const { name, email, password, isPro } = createUser;
       const isProBoolean = isPro === 'on';
-      const newUser = await this.authServiceLocal.register(name, email, password, '', isProBoolean ? UserType.Pro : UserType.Regular);
+      const newUser = await this.authServiceLocal.register(name, email, password, '', isProBoolean ? 'pro' : 'regular');
 
-      return this.sendOk(res, { id: newUser._id, email: newUser.email, name: newUser.name, avatar:newUser.avatar, userType: newUser.userType });
+      return this.sendOk(res, this.mapUser(newUser));
     } catch (error) {
       return this.sendUnauthorized(res, 'Registration failed');
     }
@@ -65,9 +66,22 @@ export class AuthController extends ControllerWithAuth {
   async checkStatus(req: Request, res: Response): Promise<Response> {
     try {
       const user = await this.getUserFromHeader(req, res);
-      return this.sendOk(res, user);
+      if(user === null){
+        return this.sendUnauthorized(res, 'Invalid token');
+      }
+      return this.sendOk(res, this.mapUser(user));
     } catch (error) {
       return this.sendUnauthorized(res, 'Invalid token');
     }
+  }
+
+  private mapUser(user: IUser): User {
+    return {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      avatar: user.avatar,
+      userType: user.userType,
+    };
   }
 }

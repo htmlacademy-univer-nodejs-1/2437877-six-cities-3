@@ -3,47 +3,38 @@ import {Model, Types} from 'mongoose';
 import {TYPES} from '../types.js';
 import {Comment} from '../../domain/rent/Comment.js';
 import {IComment} from './comment.schema.js';
-import {UserRepository} from './user.repository.js';
 
 
 @injectable()
 export class CommentRepository {
   constructor(
     @inject(TYPES.CommentModel) private readonly commentModel: Model<IComment>,
-    @inject(TYPES.UserService) private readonly userService: UserRepository
   ) {}
 
-  private async mapToComment(doc: IComment): Promise<Comment> {
-    const author = await this.userService.findById(doc.userId.toString());
-    if (!author) {
-      throw new Error('Author not found');
-    }
-    return new Comment(doc.text, doc.createdAt, doc.rating, author);
-  }
-
-  async create(comment: Comment, offerId: string): Promise<Comment> {
+  async create(comment: Comment, offerId: Types.ObjectId): Promise<IComment> {
     const newComment = new this.commentModel({
+      _id: new Types.ObjectId(),
       text: comment.text,
       publishDate: comment.publishDate,
       rating: comment.rating,
-      authorId: comment.author._id,
-      offerId: new Types.ObjectId(offerId)
+      authorId: comment.authorId,
+      offerId: offerId
     });
     const savedComment = await newComment.save();
-    return this.mapToComment(savedComment);
+    return savedComment as IComment;
   }
 
-  async findById(id: string): Promise<Comment | null> {
+  async findById(id: string): Promise<IComment | null> {
     const comment = await this.commentModel.findById(id).exec();
-    return comment ? this.mapToComment(comment) : null;
+    return comment as IComment;
   }
 
-  async findByOfferId(offerId: string): Promise<Comment[]> {
+  async findByOfferId(offerId: string): Promise<IComment[]> {
     const comments = await this.commentModel.find({ offerId: new Types.ObjectId(offerId) }).exec();
-    return Promise.all(comments.map((comment) => this.mapToComment(comment)));
+    return Promise.all(comments.map((comment) => comment as IComment));
   }
 
-  async update(id: string, commentData: Partial<Comment>): Promise<Comment | null> {
+  async update(id: string, commentData: Partial<Comment>): Promise<IComment | null> {
     const updatedComment = await this.commentModel.findByIdAndUpdate(
       id,
       {
@@ -53,7 +44,7 @@ export class CommentRepository {
       },
       { new: true }
     ).exec();
-    return updatedComment ? this.mapToComment(updatedComment) : null;
+    return updatedComment as IComment;
   }
 
   async delete(id: string): Promise<boolean> {

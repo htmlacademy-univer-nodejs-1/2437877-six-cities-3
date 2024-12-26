@@ -86,7 +86,7 @@ export class JWTAuthService implements IAuthService {
   }
 
   async validateToken(token: string): Promise<IUser > {
-   /* if (!this.tokenWhitelist.has(token)) {
+    /* if (!this.tokenWhitelist.has(token)) {
       throw new Error('Token is not valid or has been revoked');
     }*/
 
