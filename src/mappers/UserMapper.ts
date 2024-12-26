@@ -1,21 +1,20 @@
 import {IUser} from '../infrastructure/DAL/user.model.js';
-import {User} from '../domain/user/User.js';
+import {User, UserWithPassword} from '../domain/user/User.js';
 import {UserType} from '../domain/user/UserType.js';
 import mongoose from 'mongoose';
 
 export class UserMapper {
   public static toDomain(userDbo: IUser): User {
     return new User(
-      parseInt(userDbo._id.toString('hex').substring(18)),
+      userDbo._id.toString(),
       userDbo.name,
       userDbo.email,
-      userDbo.passwordHash,
       userDbo.userType as UserType,
       userDbo.avatar
     );
   }
 
-  public static toDbo(user: User): Partial<IUser> {
+  public static toDbo(user: UserWithPassword): Partial<IUser> {
     return {
       ...(user.id && { _id: new mongoose.Types.ObjectId(user.id) }),
       name: user.name,

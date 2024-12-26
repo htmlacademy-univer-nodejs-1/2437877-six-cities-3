@@ -1,4 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
+import {UserType} from "../../domain/user/UserType.js";
 
 export interface IUser {
   _id: mongoose.Types.ObjectId;
@@ -6,7 +7,7 @@ export interface IUser {
   email: string;
   avatar: string;
   passwordHash: string;
-  userType: 'regular' | 'pro';
+  userType: UserType;
   favoriteOffers: mongoose.Types.ObjectId[];
 }
 

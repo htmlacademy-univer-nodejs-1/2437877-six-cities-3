@@ -1,9 +1,9 @@
 import * as readline from 'node:readline';
 import * as fs from 'node:fs';
-import {User} from './domain/user/User.js';
+import {UserWithPassword} from './domain/user/User.js';
 import {HousingType} from './domain/rent/HousingType.js';
 import {Facility} from './domain/rent/Facilities.js';
-import {UserType} from './domain/user/UserType.js';
+import {UserType, UserTypes} from './domain/user/UserType.js';
 import {Cities, City} from './domain/rent/City.js';
 
 
@@ -21,10 +21,10 @@ export class RentalOfferWithUser {
   guests: number;
   price: number;
   facilities: Facility[];
-  author: User;
+  author: UserWithPassword;
   coordinates: [number, number];
 
-  constructor(title: string, description: string, publishDate: Date, city: City, previewImage: string, photos: string[], isPremium: boolean, rating: number, propertyType: HousingType, rooms: number, guests: number, price: number, amenities: Facility[], author: User, coordinates: [number, number]) {
+  constructor(title: string, description: string, publishDate: Date, city: City, previewImage: string, photos: string[], isPremium: boolean, rating: number, propertyType: HousingType, rooms: number, guests: number, price: number, amenities: Facility[], author: UserWithPassword, coordinates: [number, number]) {
     this.title = title;
     this.description = description;
     this.publishDate = publishDate;
@@ -83,7 +83,7 @@ export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOf
       coordinates
     ] = line.split('\t');
 
-    if(authorUserType !== UserType.Pro && authorUserType !== UserType.Regular){
+    if(!UserTypes.includes(authorUserType as UserType)){
       throw new Error('Invalid user type');
     }
 
@@ -91,7 +91,7 @@ export async function parseTsvToRentalOffers(filepath: string): Promise<RentalOf
       throw new Error('Invalid city');
     }
 
-    const author = new User(parseInt(authorId, 10), authorName, authorEmail, authorPassword, authorUserType, authorAvatar);
+    const author = new UserWithPassword(authorId, authorName, authorEmail, authorPassword, authorUserType as UserType, authorAvatar);
 
     const rentalOffer = new RentalOfferWithUser(
       title,

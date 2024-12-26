@@ -9,6 +9,7 @@ import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middle
 import {CheckExistMiddleware} from '../middleware/checkExist.middleware.js';
 import {ControllerWithAuth} from './Common/controllerWithAuth.js';
 import {AuthMiddleware} from '../middleware/auth.middleware.js';
+import mongoose from "mongoose";
 
 
 @injectable()
@@ -24,11 +25,11 @@ export class OfferController extends ControllerWithAuth {
 
 
     this.addRoute({ path: '/offers', method: HttpMethod.Get, handler: this.getAll });
+    this.addRoute({ path: '/offers/premium', method: HttpMethod.Get, handler: this.getPremium, middlewares: [] });
     this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Get, handler: this.getById, middlewares: [new ValidateObjectIdMiddleware('offerId')] });
-    this.addRoute({ path: '/offers/premium', method: HttpMethod.Get, handler: this.getPremium });
 
     this.addRoute({ path: '/offers', method: HttpMethod.Post, handler: this.create, middlewares: [authMiddleware] });
-    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Put, handler: this.update, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId')] });
+    this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Put, handler: this.update, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId'), checkOfferExist] });
     this.addRoute({ path: '/offers/:offerId', method: HttpMethod.Delete, handler: this.delete, middlewares: [authMiddleware, new ValidateObjectIdMiddleware('offerId'), checkOfferExist] });
 
     this.addRoute({ path: '/favorite', method: HttpMethod.Get, handler: this.getFavorite });
@@ -52,7 +53,6 @@ export class OfferController extends ControllerWithAuth {
   }
 
   async create(req: Request, res: Response): Promise<Response> {
-    try {
       const user = await this.getUserFromHeader(req, res);
       if(user === null){
         return res;
@@ -61,9 +61,6 @@ export class OfferController extends ControllerWithAuth {
       const offerData = req.body;
       const offer = await this.offerService.create(user._id, offerData);
       return this.sendCreated(res, offer);
-    } catch (error) {
-      return this.sendUnauthorized(res, 'Authentication required');
-    }
   }
 
   async update(req: Request, res: Response): Promise<Response> {
@@ -95,8 +92,8 @@ export class OfferController extends ControllerWithAuth {
 
       const offerId = req.params.offerId;
 
-      await this.offerService.delete(offerId);
-      return this.sendNoContent(res);
+      const result = await this.offerService.delete(new mongoose.Types.ObjectId(offerId), user._id);
+      return this.sendOk(res, result);
     } catch (error) {
       if ((error as Error).message === 'Forbidden') {
         return this.sendForbidden(res, 'Can only delete own offers');
