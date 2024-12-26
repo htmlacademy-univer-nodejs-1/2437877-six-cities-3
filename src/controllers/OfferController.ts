@@ -9,7 +9,7 @@ import {ValidateObjectIdMiddleware} from '../middleware/validate-objectid.middle
 import {CheckExistMiddleware} from '../middleware/checkExist.middleware.js';
 import {ControllerWithAuth} from './Common/controllerWithAuth.js';
 import {AuthMiddleware} from '../middleware/auth.middleware.js';
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 
 @injectable()
@@ -53,14 +53,14 @@ export class OfferController extends ControllerWithAuth {
   }
 
   async create(req: Request, res: Response): Promise<Response> {
-      const user = await this.getUserFromHeader(req, res);
-      if(user === null){
-        return res;
-      }
+    const user = await this.getUserFromHeader(req, res);
+    if(user === null){
+      return res;
+    }
 
-      const offerData = req.body;
-      const offer = await this.offerService.create(user._id, offerData);
-      return this.sendCreated(res, offer);
+    const offerData = req.body;
+    const offer = await this.offerService.create(user._id, offerData);
+    return this.sendCreated(res, offer);
   }
 
   async update(req: Request, res: Response): Promise<Response> {
@@ -145,7 +145,7 @@ export class OfferController extends ControllerWithAuth {
 
       const offerId = req.params.offerId;
       await this.offerService.addToFavorites(offerId, user._id);
-      return this.sendOk(res, { message: 'Offer added to favorites' });
+      return this.sendOk(res, {});
     } catch (error) {
       return this.sendUnauthorized(res, 'Authentication required');
     }
@@ -160,7 +160,7 @@ export class OfferController extends ControllerWithAuth {
 
       const offerId = req.params.offerId;
       await this.offerService.removeFromFavorites(offerId, user._id);
-      return this.sendOk(res, { message: 'Offer removed from favorites' });
+      return this.sendOk(res, {});
     } catch (error) {
       return this.sendUnauthorized(res, 'Authentication required');
     }

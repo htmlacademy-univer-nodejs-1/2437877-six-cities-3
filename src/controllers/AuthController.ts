@@ -8,8 +8,8 @@ import {AuthMiddleware} from '../middleware/auth.middleware.js';
 import {plainToInstance} from 'class-transformer';
 import {CreateUserDto} from './Auth/CreateUserDto.js';
 import {ControllerWithAuth} from './Common/controllerWithAuth.js';
-import {IUser} from "../infrastructure/DAL/user.model.js";
-import {User} from "../domain/user/User.js";
+import {IUser} from '../infrastructure/DAL/user.model.js';
+import {User} from '../domain/user/User.js';
 
 @injectable()
 export class AuthController extends ControllerWithAuth {
@@ -41,7 +41,7 @@ export class AuthController extends ControllerWithAuth {
       const createUser = plainToInstance(CreateUserDto, req.body);
       const { name, email, password, isPro } = createUser;
       const isProBoolean = isPro === 'on';
-      const newUser = await this.authServiceLocal.register(name, email, password, '', isProBoolean ? "pro" : "regular");
+      const newUser = await this.authServiceLocal.register(name, email, password, '', isProBoolean ? 'pro' : 'regular');
 
       return this.sendOk(res, this.mapUser(newUser));
     } catch (error) {
@@ -66,7 +66,7 @@ export class AuthController extends ControllerWithAuth {
   async checkStatus(req: Request, res: Response): Promise<Response> {
     try {
       const user = await this.getUserFromHeader(req, res);
-      if(user == null){
+      if(user === null){
         return this.sendUnauthorized(res, 'Invalid token');
       }
       return this.sendOk(res, this.mapUser(user));
