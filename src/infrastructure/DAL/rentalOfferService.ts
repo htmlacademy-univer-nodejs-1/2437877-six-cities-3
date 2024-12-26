@@ -39,7 +39,7 @@ export class RentalOfferService implements IBaseService{
     const offersWithRating = await Promise.all(
       offersDbo.map(async (offerDbo) => {
         const rating = await offerDbo.calculateRating();
-        return {...offerDbo as IRentalOffer, rating: rating };
+        return Object.assign(offerDbo.toObject(), { rating:rating }) as RentalOfferWithRating;
       })
     );
 

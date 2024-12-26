@@ -110,7 +110,7 @@ rentalOfferSchema.virtual('rating').get(function(this: IRentalOffer) {
 
 rentalOfferSchema.methods.calculateRating = async function(this: IRentalOffer) {
   const CommentModel = mongoose.model('Comment');
-  const comments = await CommentModel.find({ rentalOffer: this._id });
+  const comments = await CommentModel.find({ offerId: this._id });
 
   if (comments.length === 0) {
     return 0;

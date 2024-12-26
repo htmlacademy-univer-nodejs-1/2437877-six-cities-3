@@ -1,8 +1,8 @@
-import {IRentalOffer} from '../infrastructure/DAL/rentalOffer.schema.js';
 import {RentalOffer} from '../domain/rent/RentalOffer.js';
+import {RentalOfferWithRating} from '../infrastructure/DAL/rentalOfferService.js';
 
 export class RentalOfferMapper {
-  public static toDomain(offerDbo: IRentalOffer & { rating: number }): RentalOffer {
+  public static toDomain(offerDbo: RentalOfferWithRating): RentalOffer {
     return new RentalOffer(
       offerDbo._id.toString(),
       offerDbo.title,
@@ -19,7 +19,7 @@ export class RentalOfferMapper {
       offerDbo.guests,
       offerDbo.price,
       offerDbo.facilities,
-      offerDbo.author._id.toString(),
+      offerDbo.author.toString(),
       offerDbo.commentsCount,
       offerDbo.coordinates
     );
