@@ -1,11 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
 
 export interface IComment {
-  _id: Schema.Types.ObjectId,
+  _id: mongoose.Types.ObjectId,
   text: string;
   createdAt: Date;
   rating: number;
-  userId: mongoose.Types.ObjectId;
+  authorId: mongoose.Types.ObjectId;
   offerId: mongoose.Types.ObjectId;
 }
 
@@ -27,7 +27,7 @@ const commentSchema = new Schema<IComment>({
     min: 1,
     max: 5
   },
-  userId: {
+  authorId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true

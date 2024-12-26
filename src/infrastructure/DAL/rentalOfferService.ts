@@ -9,7 +9,7 @@ import {TYPES} from '../types.js';
 import {OfferDto} from '../../domain/rent/offerDto.js';
 
 
-type RentalOfferWithRating = IRentalOffer & { rating: number };
+export type RentalOfferWithRating = IRentalOffer & { rating: number };
 
 @injectable()
 export class RentalOfferService implements IBaseService{
@@ -39,7 +39,7 @@ export class RentalOfferService implements IBaseService{
     const offersWithRating = await Promise.all(
       offersDbo.map(async (offerDbo) => {
         const rating = await offerDbo.calculateRating();
-        return Object.assign(offerDbo, { rating }) as RentalOfferWithRating;
+        return {...offerDbo as IRentalOffer, rating: rating };
       })
     );
 
