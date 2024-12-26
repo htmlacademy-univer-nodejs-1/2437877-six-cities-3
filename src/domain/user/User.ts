@@ -1,4 +1,4 @@
-import {UserType} from "./UserType.js";
+import {UserType} from './UserType.js';
 
 export class User {
   id: string;
